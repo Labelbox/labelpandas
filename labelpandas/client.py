@@ -82,10 +82,16 @@ class Client():
         futures = []
         with ThreadPoolExecutor() as exc:
             for index, row in table.iterrows():
-                futures.append(exc.submit(connector.create_data_rows, local_files, self.lb_client, row, row_data_col, global_key_col, external_id_col, metadata_name_key_to_schema, metadata_index))
+                futures.append(
+                    exc.submit(
+                        connector.create_data_rows, local_files, self.lb_client, row, row_data_col, 
+                        global_key_col, external_id_col, metadata_index, metadata_name_key_to_schema,
+                        metadata_schema_to_name_key, divider
+                    )
+                )
             for f in as_completed(futures):
                 res = f.result()
-                global_key_to_upload_dict[str(res[0])] = res[1]
+                global_key_to_upload_dict[str(res["global_key"])] = res
 
         upload_results = self.base_client.batch_create_data_rows(lb_dataset, global_key_to_upload_dict, skip_duplicates, divider)
 
