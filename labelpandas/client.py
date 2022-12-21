@@ -7,24 +7,13 @@ from labelpandas import connector
 class Client():
     """
     Args:
-      pandas_dataframe    :   Required: pandas.core.frame.DataFrame() object
       lb_client           :   Required: labelbox.client.Client()
-      lb_dataset          :   labelbox.schema.dataset.Dataset() object - if provided, will create data rows in this dataset
-      row_data_col        :   Column name corresponding to file_path / URL
-      external_id_col     :   Column name corresponding to external ID
-      metadata_index      :   Creates metadata, dictionary where {key=metadata_field_name : value=metadata_type}, where metadata_type is one of "string", "number", "datetime", or "enum"
-      attachment_index    :   Creates attachments, ictionary where {key=attachment_field_name : value=attachment_type}, where attachment_type is one of "image_row_data", "video_row_data", "text_row_data", "raw_text", or "html"
-      verbose             :   If True, prints events
 
     Attributes:
         lb_client                   :   labelbox.Client object
-        bq_client                   :   bigquery.Client object
 
     Key Functions:
-        create_table_from_dataset   :   Creates a BigQuery table given a Labelbox dataset
-        create_data_rows_from_table :   Creates Labelbox data rows (and metadata) given a BigQuery table
-        upsert_table_metadata       :   Updates BigQuery table metadata columns given a Labelbox dataset
-        upsert_labelbox_metadata    :   Updates Labelbox metadata given a BigQuery table
+        create_data_rows_from_table :   Creates Labelbox data rows (and metadata) given a Pandas table
     """       
     def __init__(
         self,           
