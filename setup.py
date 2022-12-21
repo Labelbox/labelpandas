@@ -11,5 +11,5 @@ setuptools.setup(
   description='Labelbox Connector for Pandas',
   long_description=long_description,
   long_description_content_type="text/markdown",
-  install_requires=["labelbox", "packaging"]
+  install_requires=["labelbox", "labelbase", "packaging"]
 )
