@@ -58,7 +58,7 @@ class Client():
         check = self.base_client.enforce_metadata_index(metadata_index, verbose)
         if not check:
             return None
-        table = self.base_client.sync_metadata_fields(table, get_columns_function, add_column_function, get_unique_values_function, metadata_index, verbose)
+        table = self.base_client.sync_metadata_fields(table, connector.get_columns_function, connector.add_column_function, connector.get_unique_values_function, metadata_index, verbose)
         if not table:
             return None
         global_key_col = global_key_col if global_key_col else row_data_col
