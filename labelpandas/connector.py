@@ -32,3 +32,13 @@ def create_data_rows(
             value = row[metadata_field_name] if name_key not in metadata_name_key_to_schema.keys() else metadata_name_key_to_schema[name_key]
             data_row_dict['metadata_fields'].append({"schema_id" : metadata_schema_to_name_key[metadata_field_name], "value" : value})
     return data_row_dict
+
+def get_columns_function(table):
+    return [col for col in table.columns]
+
+def get_unique_values_function(table, column_name:str):
+    return list(table[column_name].unique())
+
+def add_column_function(table, column_name:str):
+    table[column_name] = ""
+    return table
