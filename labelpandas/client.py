@@ -55,13 +55,7 @@ class Client():
             verbose         :   Required (bool) - If True, prints information about code execution
         Returns:
             List of errors from data row upload - if successful, is an empty list
-        """        
-        check = self.base_client.enforce_metadata_index(
-            metadata_index=metadata_index, 
-            verbose=verbose
-        )
-        if not check:
-            return None
+        """
         table = self.base_client.sync_metadata_fields(
             table=table, 
             get_columns_function=connector.get_columns_function, 
@@ -70,6 +64,7 @@ class Client():
             metadata_index=metadata_index, 
             verbose=verbose
         )
+        
         if type(table) == bool:
             return None
         
