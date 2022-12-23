@@ -29,21 +29,11 @@ class Client():
     # def create_table_from_dataset(): 
     #     return table 
 
-    def create_data_rows_from_table(
-        self,
-        table:pd.core.frame.DataFrame,
-        lb_dataset:labelboxDataset, 
-        row_data_col:str, 
-        local_files:bool=False,
-        global_key_col:str="", 
-        external_id_col:str="", 
-        metadata_index:dict={}, 
-        skip_duplicates:bool=False,
-        divider="___",
-        verbose:bool=False):
+    def create_data_rows_from_table(self, df:pd.core.frame.DataFrame, lb_dataset:labelboxDataset, row_data_col:str, local_files:bool=False,
+        global_key_col=None, external_id_col=None, metadata_index:dict={}, skip_duplicates:bool=False, divider="___", verbose:bool=False):
         """ Creates Labelbox data rows given a Pandas table and a Labelbox Dataset
         Args:
-            table           :   Required (pandas.core.frame.DataFrame) - Pandas dataframe to-be-uploaded
+            df              :   Required (pandas.core.frame.DataFrame) - Pandas dataframe to-be-uploaded
             lb_dataset      :   Required (labelbox.schema.dataset.Dataset) - Labelbox dataset to add data rows to            
             row_data_col    :   Required (str) - Column name where the data row row data URL is located
             local_files     :   Required (bool) - If True, will create urls for local files / If False, treats the values in `row_data_col` as urls
@@ -56,35 +46,24 @@ class Client():
         Returns:
             List of errors from data row upload - if successful, is an empty list
         """
-        table = self.base_client.sync_metadata_fields(
-            table=table, 
-            get_columns_function=connector.get_columns_function, 
-            add_column_function=connector.add_column_function, 
-            get_unique_values_function=connector.get_unique_values_function, 
-            metadata_index=metadata_index, 
-            verbose=verbose
+        df = self.base_client.sync_metadata_fields(
+            table=df, get_columns_function=connector.get_columns_function, add_column_function=connector.add_column_function, 
+            get_unique_values_function=connector.get_unique_values_function, metadata_index=metadata_index, verbose=verbose
         )
         
-        if type(table) == bool:
+        if type(df) == bool:
             return None   
         
         global_key_to_upload_dict = connector.create_upload_dict(
-            table=table, 
-            local_files=local_files, 
-            lb_client=self.lb_client,
-            row=row,
-            row_data_col=row_data_col,
-            global_key_col=global_key_col,
-            external_id_col=external_id_col,
-            metadata_index=metadata_index,
-            divider=divider
+            df=df, local_files=local_files, lb_client=self.lb_client,
+            row=row, row_data_col=row_data_col, global_key_col=global_key_col, 
+            external_id_col=external_id_col, metadata_index=metadata_index, divider=divider
         )
                 
         upload_results = self.base_client.batch_create_data_rows(
-            dataset=lb_dataset, 
-            global_key_to_upload_dict=global_key_to_upload_dict, 
-            skip_duplicates=skip_duplicates, 
-            divider=divider)
+            dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
+            skip_duplicates=skip_duplicates, divider=divider
+        )
 
         return upload_results
     
