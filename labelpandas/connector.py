@@ -2,7 +2,7 @@ from labelbox import Client
 import pandas
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, row:pandas.core.series.Series, 
-                       row_data_col:str, global_key_col=None, external_id_col=None, metadata_index:dict={}, divider:str="///"):
+                       row_data_col:str, global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
@@ -37,7 +37,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
             global_key_to_upload_dict[str(res["global_key"])] = res    
     return global_key_to_upload_dict
 
-def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.Series, row_data_col:str, global_key_col=None, external_id_col=None, 
+def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.Series, row_data_col:str, global_key_col:str="", external_id_col:str="", 
                      metadata_index:dict={}, metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, divider:str="///"):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas table
     Args:
