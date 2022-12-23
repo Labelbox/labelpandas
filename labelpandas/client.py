@@ -55,17 +55,36 @@ class Client():
         Returns:
             List of errors from data row upload - if successful, is an empty list
         """        
-        check = self.base_client.enforce_metadata_index(metadata_index, verbose)
+        check = self.base_client.enforce_metadata_index(
+            metadata_index=metadata_index, 
+            verbose=verbose
+        )
         if not check:
             return None
-        table = self.base_client.sync_metadata_fields(table, connector.get_columns_function, connector.add_column_function, connector.get_unique_values_function, metadata_index, verbose)
+        table = self.base_client.sync_metadata_fields(
+            table=table, 
+            get_columns_function=connector.get_columns_function, 
+            add_column_function=connector.add_column_function, 
+            get_unique_values_function=connector.get_unique_values_function, 
+            metadata_index=metadata_index, 
+            verbose=verbose
+        )
         if not table:
             return None
+        
         global_key_col = global_key_col if global_key_col else row_data_col
         external_id_col = external_id_col if external_id_col else global_key_col
 
-        metadata_schema_to_name_key = self.base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
-        metadata_name_key_to_schema = self.base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True)
+        metadata_schema_to_name_key = self.base_client.get_metadata_schema_to_name_key(
+            lb_mdo=False, 
+            divider=divider, 
+            invert=False
+        )
+        metadata_name_key_to_schema = self.base_client.get_metadata_schema_to_name_key(
+            lb_mdo=False, 
+            divider=divider, 
+            invert=True
+        )
 
         global_key_to_upload_dict = {}
         futures = []
