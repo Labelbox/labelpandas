@@ -70,7 +70,7 @@ class Client():
             metadata_index=metadata_index, 
             verbose=verbose
         )
-        if not table:
+        if type(table) == bool:
             return None
         
         global_key_col = global_key_col if global_key_col else row_data_col
