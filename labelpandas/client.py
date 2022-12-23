@@ -66,38 +66,25 @@ class Client():
         )
         
         if type(table) == bool:
-            return None
+            return None   
         
-        global_key_col = global_key_col if global_key_col else row_data_col
-        external_id_col = external_id_col if external_id_col else global_key_col
-
-        metadata_schema_to_name_key = self.base_client.get_metadata_schema_to_name_key(
-            lb_mdo=False, 
-            divider=divider, 
-            invert=False
+        global_key_to_upload_dict = connector.create_upload_dict(
+            table=table, 
+            local_files=local_files, 
+            lb_client=self.lb_client,
+            row=row,
+            row_data_col=row_data_col,
+            global_key_col=global_key_col,
+            external_id_col=external_id_col,
+            metadata_index=metadata_index,
+            divider=divider
         )
-        metadata_name_key_to_schema = self.base_client.get_metadata_schema_to_name_key(
-            lb_mdo=False, 
-            divider=divider, 
-            invert=True
-        )
-
-        global_key_to_upload_dict = {}
-        futures = []
-        with ThreadPoolExecutor() as exc:
-            for index, row in table.iterrows():
-                futures.append(
-                    exc.submit(
-                        connector.create_data_rows, local_files, self.lb_client, row, row_data_col, 
-                        global_key_col, external_id_col, metadata_index, metadata_name_key_to_schema,
-                        metadata_schema_to_name_key, divider
-                    )
-                )
-            for f in as_completed(futures):
-                res = f.result()
-                global_key_to_upload_dict[str(res["global_key"])] = res
-
-        upload_results = self.base_client.batch_create_data_rows(lb_dataset, global_key_to_upload_dict, skip_duplicates, divider)
+                
+        upload_results = self.base_client.batch_create_data_rows(
+            dataset=lb_dataset, 
+            global_key_to_upload_dict=global_key_to_upload_dict, 
+            skip_duplicates=skip_duplicates, 
+            divider=divider)
 
         return upload_results
     
