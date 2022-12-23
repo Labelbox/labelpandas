@@ -27,9 +27,9 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
         for index, row in df.iterrows():
             futures.append(
                 exc.submit(
-                    create_data_rows, local_files, lb_client, row, row_data_col, 
-                    global_key_col, external_id_col, metadata_index, metadata_name_key_to_schema,
-                    metadata_schema_to_name_key, divider
+                    create_data_rows, local_files, lb_client, row, 
+                    metadata_name_key_to_schema, metadata_schema_to_name_key,
+                    row_data_col, global_key_col, external_id_col, metadata_index, divider
                 )
             )
         for f in as_completed(futures):
@@ -37,8 +37,9 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
             global_key_to_upload_dict[str(res["global_key"])] = res    
     return global_key_to_upload_dict
 
-def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.Series, row_data_col:str, global_key_col:str="", external_id_col:str="", 
-                     metadata_index:dict={}, metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, divider:str="///"):
+def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.Series, 
+                     metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict,
+                     row_data_col:str, global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas table
     Args:
         local_files                 :   Required (bool) - If True, will create urls for local files / If False, treats the values in `row_data_col` as urls
