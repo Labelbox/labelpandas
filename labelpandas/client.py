@@ -7,13 +7,12 @@ from labelpandas import connector
 class Client():
     """
     Args:
-      lb_client           :   Required: labelbox.client.Client()
-
+        lb_api_key                  :   Required: labelbox.client.Client()
     Attributes:
         lb_client                   :   labelbox.Client object
-
+        base_client                 :   labelbase.Client object
     Key Functions:
-        create_data_rows_from_table :   Creates Labelbox data rows (and metadata) given a Pandas table
+        create_data_rows_from_table :   Creates Labelbox data rows (and metadata) given a Pandas DataFrame
     """       
     def __init__(
         self,           
