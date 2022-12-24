@@ -46,20 +46,25 @@ class Client():
         Returns:
             List of errors from data row upload - if successful, is an empty list
         """
+        
+        # Ensure all your metadata_index keys are metadata fields in Labelbox and that your Pandas DataFrame has all the right columns
         df = self.base_client.sync_metadata_fields(
             table=df, get_columns_function=connector.get_columns_function, add_column_function=connector.add_column_function, 
             get_unique_values_function=connector.get_unique_values_function, metadata_index=metadata_index, verbose=verbose
         )
         
+        # If df returns False, the sync failed
         if type(df) == bool:
             return None   
         
+        # Create a dictionary where {key=global_key : value=labelbox_upload_dictionary} - this is unique to Pandas
         global_key_to_upload_dict = connector.create_upload_dict(
             df=df, local_files=local_files, lb_client=self.lb_client,
-            row=row, row_data_col=row_data_col, global_key_col=global_key_col, 
+            row_data_col=row_data_col, global_key_col=global_key_col, 
             external_id_col=external_id_col, metadata_index=metadata_index, divider=divider
         )
                 
+        # Upload your data rows to Labelbox
         upload_results = self.base_client.batch_create_data_rows(
             dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
             skip_duplicates=skip_duplicates, divider=divider
