@@ -67,6 +67,9 @@ def create_data_rows(local_files:bool, lb_client:Client, base_client:baseClient,
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
+            print(type(row))
+            print(metadata_field_name)
+            print(type(row[metadata_field_name])
             print(row[metadata_field_name])
             metadata_value = base_client.process_metadata_value(
                 metadata_value=row[metadata_field_name],
