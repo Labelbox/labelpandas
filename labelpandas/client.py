@@ -60,7 +60,7 @@ class Client():
         global_key_to_upload_dict = connector.create_upload_dict(
             df=df, local_files=local_files, lb_client=self.lb_client, base_client=self.base_client,
             row_data_col=row_data_col, global_key_col=global_key_col, 
-            external_id_col=external_id_col, metadata_index=metadata_index, divider=divider
+            external_id_col=external_id_col, metadata_index=metadata_index, divider=divider, verbose=verbose
         )
                 
         # Upload your data rows to Labelbox
