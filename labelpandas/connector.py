@@ -1,13 +1,15 @@
 from labelbox import Client
+from labelbase import Client as baseClient
 import pandas
 
-def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, row_data_col:str, 
+def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, base_client:baseClient, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
         local_files     :   Required (bool) - If True, will create urls for local files / If False, treats the values in `row_data_col` as urls
         lb_client       :   Required (labelbox.client.Client) - Labelbox Client object
+        base_client     :   Required (labelbase.client.Client) - Labelbase Client object
         row_data_col    :   Required (str) - Column name where the data row row data URL is located
         global_key_col  :   Optional (str) - Column name where the data row global key is located - defaults to the row_data_col
         external_id_col :   Optional (str) - Column name where the data row external ID is located - defaults to the global_key_col
@@ -18,8 +20,8 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
     """    
     global_key_col = global_key_col if global_key_col else row_data_col
     external_id_col = external_id_col if external_id_col else global_key_col       
-    metadata_schema_to_name_key = get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
-    metadata_name_key_to_schema = get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True) 
+    metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
+    metadata_name_key_to_schema = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True) 
     global_key_to_upload_dict = {}
     futures = []
     with ThreadPoolExecutor() as exc:
