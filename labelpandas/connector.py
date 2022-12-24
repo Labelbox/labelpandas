@@ -2,7 +2,6 @@ from labelbox import Client
 from labelbase import Client as baseClient
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import numpy
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, base_client:baseClient, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///", verbose=False):
@@ -33,26 +32,27 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
         for index, row in df.iterrows():
             futures.append(
                 exc.submit(
-                    create_data_rows, local_files, lb_client, row, 
+                    create_data_rows, local_files, lb_client, base_client, row, 
                     metadata_name_key_to_schema, metadata_schema_to_name_key,
                     row_data_col, global_key_col, external_id_col, metadata_index, divider
                 )
             )
         for f in as_completed(futures):
             res = f.result()
+            print(res)
             global_key_to_upload_dict[str(res["global_key"])] = res  
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict
 
-def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.Series, 
+def create_data_rows(local_files:bool, lb_client:Client, base_client:baseClient, row:pandas.core.series.Series, 
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict,
                      row_data_col:str, global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
         local_files                 :   Required (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
         lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
-        row                         :   Required (pandas.core.series.Series) - Pandas Row object
+        base_client                 :   Required (labelbase.client.Client) - Labelbase Client object
         row_data_col                :   Required (str) - Column containing asset URL or file path
         global_key_col              :   Optional (str) - Column name containing the data row global key - defaults to row data
         external_id_col             :   Optional (str) - Column name containing the data row external ID - defaults to global key
@@ -64,29 +64,22 @@ def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
     row_data = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
-    data_row_dict = {
-        "row_data" : row_data, "global_key" : str(row[global_key_col]), "external_id" : row[external_id_col], 
-        "metadata_fields" : [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
-    }
+    metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
-            row_value = row[metadata_field_name]
-            metadata_type = metadata_index[metadata_field_name]
-            if row_value:
-                if str(row_value) == "nan":
-                    continue
-                elif metadata_type == "enum": 
-                    name_key = f"{metadata_field_name}{divider}{row[metadata_field_name]}"
-                    value = metadata_name_key_to_schema[name_key]
-                elif metadata_type == "number":
-                    value = int(row_value)
-                elif metadata_type == "string":
-                    value = str(row_value)
-                else: ## Update for datetime later
-                    value = row_value
-                data_row_dict['metadata_fields'].append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : value})
-    return data_row_dict
-
+            metadata_value = base_client.process_metadata_value(
+                metadata_value=row[metadata_field_name],
+                metadata_type=metadata_index[metadata_field_name], 
+                parent_name=metadata_field_name,
+                metadata_name_key_to_schema=metadata_name_key_to_schema, 
+                divider=divider
+            )
+            if metadata_value:
+                metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : value})
+            else:
+                continue
+    return {"row_data":row_data,"global_key":str(row[global_key_col]),"external_id":str(row[external_id_col]),"metadata_fields":metadata_fields}                
+  
 def get_columns_function(df):
     """Grabs all column names from a Pandas DataFrame
     Args:
