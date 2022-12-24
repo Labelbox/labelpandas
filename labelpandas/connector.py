@@ -2,7 +2,7 @@ from labelbox import Client
 from labelbase import Client as baseClient
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import math
+import numpy
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, base_client:baseClient, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///", verbose=False):
@@ -72,10 +72,10 @@ def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.
         for metadata_field_name in metadata_index.keys():
             row_value = row[metadata_field_name]
             metadata_type = metadata_index[metadata_field_name]
-            if math.isnan(row_value):
-                continue
-            elif row_value:
-                if metadata_type == "enum": 
+            if row_value:
+                if str(row_value) == "nan":
+                    continue
+                elif metadata_type == "enum": 
                     name_key = f"{metadata_field_name}{divider}{row[metadata_field_name]}"
                     value = metadata_name_key_to_schema[name_key]
                 elif metadata_type == "number":
