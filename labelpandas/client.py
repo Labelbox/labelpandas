@@ -3,7 +3,6 @@ from labelbase import Client as labelbaseClient
 from labelbox.schema.dataset import Dataset as labelboxDataset
 import pandas as pd
 from labelpandas import connector
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class Client():
     """
