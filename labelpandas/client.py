@@ -63,9 +63,8 @@ class Client():
             external_id_col=external_id_col, metadata_index=metadata_index, divider=divider, verbose=verbose
         )
         
-        key = next(iter(global_key_to_upload_dict))
-        
-        print(f'{key} : {global_key_to_upload_dict[key]}')
+#         key = next(iter(global_key_to_upload_dict))
+#         print(f'{key} : {global_key_to_upload_dict[key]}')
                 
         # Upload your data rows to Labelbox
         upload_results = self.base_client.batch_create_data_rows(
