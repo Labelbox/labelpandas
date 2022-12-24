@@ -60,7 +60,7 @@ def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.
     row_data = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
     data_row_dict = {
         "row_data" : row_data, "global_key" : str(row[global_key_col]), "external_id" : row[external_id_col], 
-        "metadata_fields" : [{"schema_id" : metadata_name_key_to_schema['lb_integration_source', "value" : "Pandas"]}]
+        "metadata_fields" : [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     }
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
