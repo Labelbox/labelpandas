@@ -4,7 +4,7 @@ import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, base_client:baseClient, row_data_col:str, 
-                       global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
+                       global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
@@ -16,9 +16,12 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
         external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
         metadata_index  :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
         divider         :   Optional (str) - String delimiter for all name keys generated
+        verbose         :   Required (bool) - If True, prints information about code execution
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """    
+    if verbose:
+        print(f'Creating upload list - {len(df)} rows in Pandas DataFrame')
     global_key_col = global_key_col if global_key_col else row_data_col
     external_id_col = external_id_col if external_id_col else global_key_col       
     metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
@@ -36,7 +39,9 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
             )
         for f in as_completed(futures):
             res = f.result()
-            global_key_to_upload_dict[str(res["global_key"])] = res    
+            global_key_to_upload_dict[str(res["global_key"])] = res  
+    if verbose:
+        print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict
 
 def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.Series, 
@@ -66,7 +71,7 @@ def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.
         for metadata_field_name in metadata_index.keys():
             name_key = f"{metadata_field_name}{divider}{row[metadata_field_name]}"
             value = row[metadata_field_name] if name_key not in metadata_name_key_to_schema.keys() else metadata_name_key_to_schema[name_key]
-            data_row_dict['metadata_fields'].append({"schema_id" : metadata_schema_to_name_key[metadata_field_name], "value" : value})
+            data_row_dict['metadata_fields'].append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : value})
     return data_row_dict
 
 def get_columns_function(df):
