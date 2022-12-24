@@ -1,14 +1,13 @@
 from labelbox import Client
 import pandas
 
-def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, row:pandas.core.series.Series, 
-                       row_data_col:str, global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
+def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, row_data_col:str, 
+                       global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
         local_files     :   Required (bool) - If True, will create urls for local files / If False, treats the values in `row_data_col` as urls
         lb_client       :   Required (labelbox.client.Client) - Labelbox Client object
-        row             :   Required (pandas.core.series.Series) - Pandas row object
         row_data_col    :   Required (str) - Column name where the data row row data URL is located
         global_key_col  :   Optional (str) - Column name where the data row global key is located - defaults to the row_data_col
         external_id_col :   Optional (str) - Column name where the data row external ID is located - defaults to the global_key_col
