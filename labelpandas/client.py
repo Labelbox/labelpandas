@@ -32,19 +32,19 @@ class Client():
         global_key_col=None, external_id_col=None, metadata_index:dict={}, skip_duplicates:bool=False, divider="___", verbose:bool=False):
         """ Creates Labelbox data rows given a Pandas table and a Labelbox Dataset
         Args:
-            df              :   Required (pandas.core.frame.DataFrame) - Pandas dataframe to-be-uploaded
+            df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
             lb_dataset      :   Required (labelbox.schema.dataset.Dataset) - Labelbox dataset to add data rows to            
-            row_data_col    :   Required (str) - Column name where the data row row data URL is located
-            local_files     :   Required (bool) - If True, will create urls for local files / If False, treats the values in `row_data_col` as urls
-            global_key_col  :   Optional (str) - Column name where the data row global key is located - defaults to the row_data column
-            external_id_col :   Optional (str) - Column name where the data row external ID is located - defaults to the row_data column
-            metadata_index  :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type must be one of "enum", "string", "datetime" or "number"
+            row_data_col    :   Required (str) - Column containing asset URL or file path
+            local_files     :   Required (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
+            global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row data
+            external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
+            metadata_index  :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
             skip_duplicates :   Optional (bool) - If True, will skip duplicate global_keys, otherwise will generate a unique global_key with a suffix "_1", "_2" and so on
-            divider         :   Optional (str) - If skip_duplicates=False, uploader will auto-add a suffix to global keys to create unique ones, where new_global_key=old_global_key+divider+clone_counter
+            divider         :   Optional (str) - String delimiter for all name keys generated        
             verbose         :   Required (bool) - If True, prints information about code execution
         Returns:
             List of errors from data row upload - if successful, is an empty list
-        """
+        """    
         
         # Ensure all your metadata_index keys are metadata fields in Labelbox and that your Pandas DataFrame has all the right columns
         df = self.base_client.sync_metadata_fields(
@@ -66,7 +66,7 @@ class Client():
         # Upload your data rows to Labelbox
         upload_results = self.base_client.batch_create_data_rows(
             dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
-            skip_duplicates=skip_duplicates, divider=divider
+            skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
 
         return upload_results
