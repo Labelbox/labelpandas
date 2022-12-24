@@ -8,14 +8,14 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
-        local_files     :   Required (bool) - If True, will create urls for local files / If False, treats the values in `row_data_col` as urls
+        local_files     :   Required (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
         lb_client       :   Required (labelbox.client.Client) - Labelbox Client object
         base_client     :   Required (labelbase.client.Client) - Labelbase Client object
-        row_data_col    :   Required (str) - Column name where the data row row data URL is located
-        global_key_col  :   Optional (str) - Column name where the data row global key is located - defaults to the row_data_col
-        external_id_col :   Optional (str) - Column name where the data row external ID is located - defaults to the global_key_col
-        metadata_index  :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type must be one of "enum", "string", "datetime" or "number"
-        divider         :   Optional (str) - String delimiter to separate metadata field names from their metadata answer options in your metadata_name_key_to_schema dictionary
+        row_data_col    :   Required (str) - Column containing asset URL or file path
+        global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row data
+        external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
+        metadata_index  :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
+        divider         :   Optional (str) - String delimiter for all name keys generated
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """    
@@ -42,18 +42,18 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
 def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.Series, 
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict,
                      row_data_col:str, global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
-    """ Function to-be-multithreaded to create data row dictionaries from a Pandas table
+    """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
-        local_files                 :   Required (bool) - If True, will create urls for local files / If False, treats the values in `row_data_col` as urls
+        local_files                 :   Required (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
         lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
-        row                         :   Required (pandas.core.series.Series) - Pandas row object
-        row_data_col                :   Required (str) - Column name where the data row row data URL is located
-        global_key_col              :   Optional (str) - Column name where the data row global key is located - defaults to the row_data_col
-        external_id_col             :   Optional (str) - Column name where the data row external ID is located - defaults to the global_key_col
-        metadata_index              :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type must be one of "enum", "string", "datetime" or "number"
+        row                         :   Required (pandas.core.series.Series) - Pandas Row object
+        row_data_col                :   Required (str) - Column containing asset URL or file path
+        global_key_col              :   Optional (str) - Column name containing the data row global key - defaults to row data
+        external_id_col             :   Optional (str) - Column name containing the data row external ID - defaults to global key
+        metadata_index              :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
         metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
         metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema
-        divider                     :   Optional (str) - String delimiter to separate metadata field names from their metadata answer options in your metadata_name_key_to_schema dictionary
+        divider                     :   Optional (str) - String delimiter for all name keys generated
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
