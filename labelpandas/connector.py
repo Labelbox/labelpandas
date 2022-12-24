@@ -69,9 +69,19 @@ def create_data_rows(local_files:bool, lb_client:Client, row:pandas.core.series.
     }
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
-            name_key = f"{metadata_field_name}{divider}{row[metadata_field_name]}"
-            value = row[metadata_field_name] if name_key not in metadata_name_key_to_schema.keys() else metadata_name_key_to_schema[name_key]
-            data_row_dict['metadata_fields'].append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : value})
+            row_value = row[metadata_field_name]
+            metadata_type = metadata_index[metadata_field_name]
+            if row_value:
+                if metadata_type == "enum": 
+                    name_key = f"{metadata_field_name}{divider}{row[metadata_field_name]}"
+                    value = metadata_name_key_to_schema[name_key]
+                elif metadata_type == "number":
+                    value = int(row_value)
+                elif metadata_type == "string":
+                    value = str(row_value)
+                else: ## Update for datetime later
+                    value = row_value
+                data_row_dict['metadata_fields'].append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : value})
     return data_row_dict
 
 def get_columns_function(df):
