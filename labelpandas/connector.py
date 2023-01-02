@@ -2,6 +2,7 @@ from labelbox import Client
 from labelbase import Client as baseClient
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from google.api_core import retry
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, base_client:baseClient, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///", verbose=False):
@@ -45,6 +46,17 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict
 
+@retry.Retry(predicate=retry.if_exception_type(Exception), deadline=120.)
+def create_file(lb_client, file_path:str):
+    """ Wraps lb_client.upload_file() in retry logic
+    Args:
+        lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
+        file_path                   :   Required (str) - String corresponding to the row data file path
+    Returns: 
+        Temporary URL to-be-uploaded to Labelbox
+    """ 
+    return lb_client.upload_file(file_path)    
+  
 def create_data_rows(local_files:bool, lb_client:Client, base_client:baseClient, row:pandas.core.series.Series, 
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict,
                      row_data_col:str, global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
@@ -63,14 +75,10 @@ def create_data_rows(local_files:bool, lb_client:Client, base_client:baseClient,
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
-    row_data = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
+    row_data = create_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
-            print(type(row))
-            print(metadata_field_name)
-            print(type(row[metadata_field_name]))
-            print(row[metadata_field_name])
             metadata_value = base_client.process_metadata_value(
                 metadata_value=row[metadata_field_name],
                 metadata_type=metadata_index[metadata_field_name], 
