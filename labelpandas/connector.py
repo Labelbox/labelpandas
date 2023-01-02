@@ -2,14 +2,12 @@ from labelbox import Client
 from labelbase import Client as baseClient
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from google.api_core import retry
 
-def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_client:Client, base_client:baseClient, row_data_col:str, 
+def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
-        local_files     :   Required (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
         lb_client       :   Required (labelbox.client.Client) - Labelbox Client object
         base_client     :   Required (labelbase.client.Client) - Labelbase Client object
         row_data_col    :   Required (str) - Column containing asset URL or file path
@@ -33,36 +31,23 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, local_files:bool, lb_clie
         for index, row in df.iterrows():
             futures.append(
                 exc.submit(
-                    create_data_rows, local_files, lb_client, base_client, row, 
+                    create_data_rows, lb_client, base_client, row, 
                     metadata_name_key_to_schema, metadata_schema_to_name_key,
                     row_data_col, global_key_col, external_id_col, metadata_index, divider
                 )
             )
         for f in as_completed(futures):
             res = f.result()
-            print(res)
             global_key_to_upload_dict[str(res["global_key"])] = res  
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
-    return global_key_to_upload_dict
-
-@retry.Retry(predicate=retry.if_exception_type(Exception), deadline=120.)
-def create_file(lb_client, file_path:str):
-    """ Wraps lb_client.upload_file() in retry logic
-    Args:
-        lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
-        file_path                   :   Required (str) - String corresponding to the row data file path
-    Returns: 
-        Temporary URL to-be-uploaded to Labelbox
-    """ 
-    return lb_client.upload_file(file_path)    
+    return global_key_to_upload_dict  
   
-def create_data_rows(local_files:bool, lb_client:Client, base_client:baseClient, row:pandas.core.series.Series, 
+def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series, 
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict,
                      row_data_col:str, global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
-        local_files                 :   Required (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
         lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
         base_client                 :   Required (labelbase.client.Client) - Labelbase Client object
         row_data_col                :   Required (str) - Column containing asset URL or file path
@@ -75,7 +60,7 @@ def create_data_rows(local_files:bool, lb_client:Client, base_client:baseClient,
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
-    row_data = create_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
+    row_data = str(row[row_data_col])
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
@@ -87,7 +72,7 @@ def create_data_rows(local_files:bool, lb_client:Client, base_client:baseClient,
                 divider=divider
             )
             if metadata_value:
-                metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : value})
+                metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : metadata_value})
             else:
                 continue
     return {"row_data":row_data,"global_key":str(row[global_key_col]),"external_id":str(row[external_id_col]),"metadata_fields":metadata_fields}                
