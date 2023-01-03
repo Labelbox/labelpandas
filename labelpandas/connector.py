@@ -4,7 +4,7 @@ import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
-                       global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///", verbose=False):
+                       global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
@@ -63,7 +63,7 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
-    row_data = str(row[row_data_col]) if not local_files else base_client.connector.upload_local_file(lb_client, str(row[row_data_col]))
+    row_data = str(row[row_data_col]) if not local_files else base_client.connector.upload_local_file(lb_client=lb_client, file_path=str(row[row_data_col]))
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
