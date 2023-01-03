@@ -1,9 +1,9 @@
-import labelbase
+from labelbase import Client as baseClient
 from labelbox import Client
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:labelbase.Client, row_data_col:str, 
+def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
@@ -44,7 +44,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict  
   
-def create_data_rows(lb_client:Client, base_client:labelbase.Client, row:pandas.core.series.Series,
+def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, row_data_col:str,
                      global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files=False, divider:str="///"):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
@@ -63,8 +63,7 @@ def create_data_rows(lb_client:Client, base_client:labelbase.Client, row:pandas.
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
-    row_data_str = str(row[row_data_col])
-    row_data = labelbase.connector.upload_local_file(lb_client=lb_client, file_path=row_data_str) if local_files else row_data_str
+    row_data = base_client.upload_local_file(file_path=str(row[row_data_col])) if local_files else str(row[row_data_col])
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
