@@ -13,9 +13,10 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         row_data_col    :   Required (str) - Column containing asset URL or file path
         global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row data
         external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
-        metadata_index  :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
+        metadata_index  :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
+        local_files     :   Optional (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
         divider         :   Optional (str) - String delimiter for all name keys generated
-        verbose         :   Required (bool) - If True, prints information about code execution
+        verbose         :   Optional (bool) - If True, prints information about code execution
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """    
@@ -32,7 +33,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
             futures.append(
                 exc.submit(
                     create_data_rows, lb_client, base_client, row, 
-                    metadata_name_key_to_schema, metadata_schema_to_name_key,
+                    metadata_name_key_to_schema, metadata_schema_to_name_key, local_files, 
                     row_data_col, global_key_col, external_id_col, metadata_index, divider
                 )
             )
@@ -43,24 +44,26 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict  
   
-def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series, 
-                     metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict,
-                     row_data_col:str, global_key_col:str="", external_id_col:str="", metadata_index:dict={}, divider:str="///"):
+def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series,
+                     metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, row_data_col:str,
+                     global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files=False, divider:str="///"):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
         lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
         base_client                 :   Required (labelbase.client.Client) - Labelbase Client object
-        row_data_col                :   Required (str) - Column containing asset URL or file path
+        row                         :   Required (pandas.core.series.Series) - Pandas Series object, corresponds to one row in a df.iterrow()
+        metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
+        metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
+        row_data_col                :   Required (str) - Column containing asset URL or file path        
         global_key_col              :   Optional (str) - Column name containing the data row global key - defaults to row data
         external_id_col             :   Optional (str) - Column name containing the data row external ID - defaults to global key
-        metadata_index              :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
-        metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
-        metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema
+        metadata_index              :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
+        local_files                 :   Optional (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls                
         divider                     :   Optional (str) - String delimiter for all name keys generated
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
-    row_data = str(row[row_data_col])
+    row_data = str(row[row_data_col]) if not local_files else base_client.connector.upload_local_file(lb_client, str(row[row_data_col]))
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
