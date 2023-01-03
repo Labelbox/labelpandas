@@ -33,8 +33,8 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
             futures.append(
                 exc.submit(
                     create_data_rows, lb_client, base_client, row, 
-                    metadata_name_key_to_schema, metadata_schema_to_name_key, local_files, 
-                    row_data_col, global_key_col, external_id_col, metadata_index, divider
+                    metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, 
+                    global_key_col, external_id_col, metadata_index, local_files, divider
                 )
             )
         for f in as_completed(futures):
