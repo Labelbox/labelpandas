@@ -67,15 +67,15 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
-            metadata_value = base_client.process_metadata_value(
+            input_metadata = base_client.process_metadata_value(
                 metadata_value=row[metadata_field_name],
                 metadata_type=metadata_index[metadata_field_name], 
                 parent_name=metadata_field_name,
                 metadata_name_key_to_schema=metadata_name_key_to_schema, 
                 divider=divider
             )
-            if metadata_value:
-                metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : metadata_value})
+            if input_metadata:
+                metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
             else:
                 continue
     return {"row_data":row_data,"global_key":str(row[global_key_col]),"external_id":str(row[external_id_col]),"metadata_fields":metadata_fields}                
