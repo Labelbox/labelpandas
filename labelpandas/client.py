@@ -27,8 +27,9 @@ class Client():
     # def create_table_from_dataset(): 
     #     return table 
 
-    def create_data_rows_from_table(self, df:pd.core.frame.DataFrame, lb_dataset:labelboxDataset, row_data_col:str, local_files:bool=False,
-        global_key_col=None, external_id_col=None, metadata_index:dict={}, skip_duplicates:bool=False, divider="___", verbose:bool=False):
+    def create_data_rows_from_table(
+        self, df:pd.core.frame.DataFrame, lb_dataset:labelboxDataset, row_data_col:str, global_key_col=None, external_id_col=None,
+        metadata_index:dict={}, local_files:bool=False, skip_duplicates:bool=False, verbose:bool=False, divider="___"):
         """ Creates Labelbox data rows given a Pandas table and a Labelbox Dataset
         Args:
             df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
@@ -39,8 +40,8 @@ class Client():
             external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
             metadata_index  :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
             skip_duplicates :   Optional (bool) - If True, will skip duplicate global_keys, otherwise will generate a unique global_key with a suffix "_1", "_2" and so on
-            divider         :   Optional (str) - String delimiter for all name keys generated        
             verbose         :   Required (bool) - If True, prints information about code execution
+            divider         :   Optional (str) - String delimiter for all name keys generated                    
         Returns:
             List of errors from data row upload - if successful, is an empty list
         """    
