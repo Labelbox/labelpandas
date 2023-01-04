@@ -34,7 +34,10 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
             futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
         if verbose:
             print(f'Processing data rows...')
+            x = 0
             for f in tqdm(as_completed(futures)):
+                x+=1
+                print(f"On Data Row number {x}")
                 res = f.result()
                 global_key_to_upload_dict[str(res["global_key"])] = res      
         else:
