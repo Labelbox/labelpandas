@@ -1,7 +1,7 @@
 # Labelbox Connector for Pandas
 
 Access the Labelbox Connector for Pandas, an open-source Python API that handles CSVs and Dataframes very well
-- `labelpandas.client.create_data_rows_from_table` :   Creates Labelbox data rows (and metadata) given a Pandas table
+- `labelpandas.client.create_data_rows_from_table` :   Creates Labelbox data rows (and metadata) given a Pandas table ([example notebook](https://github.com/Labelbox/labelpandas/blob/main/notebooks/create_data_rows_example.ipynb))
 - `labelpandas.client.create_table_from_dataset`   :   Creates a Pandas table given a Labelbox dataset (coming soon)
 - `labelpandas.client.upsert_table_metadata`       :   Updates Pandas table metadata columns given a Labelbox dataset (coming soon)
 - `labelpandas.client.upsert_labelbox_metadata`    :   Updates Labelbox metadata given a Pandas table (coming soon)
