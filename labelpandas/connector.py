@@ -27,13 +27,15 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
     metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
     metadata_name_key_to_schema = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True) 
     global_key_to_upload_dict = {}
-    futures = []
     with ThreadPoolExecutor() as exc:
+        futures = []
+        x = 0
         if verbose:
-            print(f'Processing data rows...')
+            print(f'Submitting data rows...')
         for index, row in df.iterrows():
             futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
-        x = 0
+        if verbose:
+            print(f'Processing data rows...')            
         for f in as_completed(futures):
             if verbose:
                 x += 1
