@@ -30,15 +30,10 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
     global_key_to_upload_dict = {}
     futures = []
     with ThreadPoolExecutor() as exc:
+        for index, row in df.iterrows():
+            futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
         if verbose:
-            print(f'Processing data rows...') 
-            for index, row in tqdm(df.iterrows()):
-                futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
-        else:
-            for index, row in df.iterrows():
-                futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))        
-        if verbose:
-            print(f'Formatting data rows...')
+            print(f'Processing data rows...')
             for f in tqdm(as_completed(futures)):
                 res = f.result()
                 global_key_to_upload_dict[str(res["global_key"])] = res      
