@@ -6,11 +6,12 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name='labelpandas',
     version='0.0.85',
-    packages=setuptools.find_packages(),
-    url='https://github.com/Labelbox/labelpandas',
+    author='Labelbox',
+    author_email="raphael@labelbox.com",
     description='Labelbox Connector for Pandas',
     long_description=long_description,
-    long_description_content_type="text/markdown",
-    author_email="raphael@labelbox.com",
+    long_description_content_type="text/markdown",    
+    url='https://github.com/Labelbox/labelpandas',    
+    packages=setuptools.find_packages(),
     install_requires=["labelbox", "labelbase", "packaging"]
 )
