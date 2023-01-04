@@ -11,5 +11,6 @@ setuptools.setup(
   description='Labelbox Connector for Pandas',
   long_description=long_description,
   long_description_content_type="text/markdown",
+  author_email="raphael@labelbox.com",
   install_requires=["labelbox", "labelbase", "packaging"]
 )
