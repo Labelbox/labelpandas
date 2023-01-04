@@ -1,6 +1,7 @@
 from labelbase import Client as baseClient
 from labelbox import Client
 import pandas
+from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
@@ -37,9 +38,14 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
                     global_key_col, external_id_col, metadata_index, local_files, divider
                 )
             )
-        for f in as_completed(futures):
-            res = f.result()
-            global_key_to_upload_dict[str(res["global_key"])] = res  
+        if verbose:
+            for f in tqdm(as_completed(futures)):
+                res = f.result()
+                global_key_to_upload_dict[str(res["global_key"])] = res      
+        else:
+            for f in as_completed(futures):
+                res = f.result()
+                global_key_to_upload_dict[str(res["global_key"])] = res             
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict  
