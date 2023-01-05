@@ -30,7 +30,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
     metadata_name_key_to_schema = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True) 
     global_key_to_upload_dict = {}
     with ThreadPoolExecutor(max_workers=8) as exc:
-        failed_global_keys = []
+        errors = []
         futures = []
         if verbose:
             print(f'Submitting data rows...')
@@ -41,19 +41,19 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
             for f in tqdm(as_completed(futures)):
                 res = f.result()
                 if res['error']:
-                    failed_global_keys.append(res)
+                    errors.append(res)
                 else:
                     global_key_to_upload_dict[str(res["global_key"])] = res    
         else:
             for f in as_completed(futures):
                 res = f.result()
                 if res['error']:
-                    failed_global_keys.append(res)
+                    errors.append(res)
                 else:
                     global_key_to_upload_dict[str(res["global_key"])] = res       
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
-    return global_key_to_upload_dict, failed_global_keys
+    return global_key_to_upload_dict, errors
   
 def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, row_data_col:str,
