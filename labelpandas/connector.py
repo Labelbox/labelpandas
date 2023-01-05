@@ -2,6 +2,7 @@ from labelbase import Client as baseClient
 from labelbox import Client
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from tqdm import tqdm
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, divider:str="///", verbose=False):
@@ -35,13 +36,15 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         for index, row in df.iterrows():
             futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
         if verbose:
-            print(f'Processing data rows...')            
-        for f in as_completed(futures):
-            if verbose:
-                x += 1
-                print(f"On Data Row number {x}")
-            res = f.result()
-            global_key_to_upload_dict[str(res["global_key"])] = res              
+            print(f'Processing data rows...')      
+        if verbose:    
+            for f in tqdm(list(as_completed(futures))):
+                res = f.result()
+                global_key_to_upload_dict[str(res["global_key"])] = res              
+        else:
+            for f in as_completed(futures):
+                res = f.result()
+                global_key_to_upload_dict[str(res["global_key"])] = res              
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict  
