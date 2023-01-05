@@ -52,9 +52,9 @@ class Client():
             get_unique_values_function=connector.get_unique_values_function, metadata_index=metadata_index, verbose=verbose
         )
         
-        # If df returns False, the sync failed
+        # If df returns False, the sync failed - terminate the upload
         if type(df) == bool:
-            return None   
+            return [], []
         
         # Create a dictionary where {key=global_key : value=labelbox_upload_dictionary} - this is unique to Pandas
         global_key_to_upload_dict, conversion_errors = connector.create_upload_dict(
@@ -63,6 +63,7 @@ class Client():
             metadata_index=metadata_index, local_files=local_files, divider=divider, verbose=verbose
         )
         
+        # If there are conversion errors, let the user know; if there are no successful conversions, terminate the upload
         if conversion_errors:
             print(f'There were {len(conversion_errors)} errors in creating your upload list - the second return value will be a list of errors.')
             if global_key_to_upload_dict:
