@@ -44,7 +44,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
             if verbose:
                 x += 1
                 percent_complete = math.ceil((x / len(df)*100))
-                if 100%percent_complete == 0:
+                if percent_complete%10 == 0:
                     print(f'{str(percent_complete)}% complete')          
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
