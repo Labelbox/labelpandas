@@ -40,17 +40,17 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
             print(f'Processing data rows...')
             for f in tqdm(as_completed(futures)):
                 res = f.result()
-                if type(res)==dict:
-                    global_key_to_upload_dict[str(res["global_key"])] = res    
-                else:
+                if res['error']:
                     failed_global_keys.append(res)
+                else:
+                    global_key_to_upload_dict[str(res["global_key"])] = res    
         else:
             for f in as_completed(futures):
                 res = f.result()
-                if type(res)==dict:
-                    global_key_to_upload_dict[str(res["global_key"])] = res    
+                if res['error']:
+                    failed_global_keys.append(res)
                 else:
-                    failed_global_keys.append(res)             
+                    global_key_to_upload_dict[str(res["global_key"])] = res       
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     if failed_global_keys:
@@ -95,9 +95,9 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
                     metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
                 else:
                     continue
-        return_value = {"row_data":row_data,"global_key":str(row[global_key_col]),"external_id":str(row[external_id_col]),"metadata_fields":metadata_fields}                                 
+        return_value = {"error" : None, "result" : {"row_data":row_data,"global_key":str(row[global_key_col]),"external_id":str(row[external_id_col]),"metadata_fields":metadata_fields}}
     except Exception as e:
-        return_value = [str(row[global_key_col]), e]
+        return_value = {"error" : e, "result" : None}
     return return_value
   
 def get_columns_function(df):
