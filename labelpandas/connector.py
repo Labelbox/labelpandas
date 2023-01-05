@@ -20,7 +20,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         divider         :   Optional (str) - String delimiter for all name keys generated
         verbose         :   Optional (bool) - If True, prints information about code execution
     Returns:
-        Two values - a success value, and a dictinoary where {key=global_key : value = {"row_data", "global_key", "external_id", "metadata_fields"}}
+        Two values - a success value, and a dictionary where {key=global_key : value = {"row_data", "global_key", "external_id", "metadata_fields"}}
     """    
     if verbose:
         print(f'Creating upload list - {len(df)} rows in Pandas DataFrame')
