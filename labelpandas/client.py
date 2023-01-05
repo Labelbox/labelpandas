@@ -67,9 +67,9 @@ class Client():
         
         # If there are conversion errors, let the user know; if there are no successful conversions, terminate the upload
         if conversion_errors:
-            print(f'There were {len(conversion_errors)} errors in creating your upload list - the second return value will be a list of errors.')
+            print(f'There were {len(conversion_errors)} errors in creating your upload list - see result["conversion_errors"] for more information')
             if global_key_to_upload_dict:
-                print(f'Data row upload will continue - the first return value will be data row upload results')
+                print(f'Data row upload will continue')
             else:
                 print(f'Data row upload will not continue')  
                 return {"upload_results" : [], "conversion_errors" : errors}
