@@ -29,42 +29,36 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
     metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
     metadata_name_key_to_schema = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True) 
     global_key_to_upload_dict = {}
-    try:
-        with ThreadPoolExecutor() as exc:
-            futures = []
-            x = 0
-            dupe_print = 0
-            if verbose:
-                print(f'Submitting data rows...')
-            for index, row in df.iterrows():
-                futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
-            if verbose:
-                print(f'Processing data rows...')
-                for f in tqdm(as_completed(futures)):
-                    res = f.result()
-                    global_key_to_upload_dict[str(res["global_key"])] = res    
-            else:
-                for f in as_completed(futures):
-                    res = f.result()
-                    global_key_to_upload_dict[str(res["global_key"])] = res                 
-#             for f in as_completed(futures):
-#                 res = f.result()
-#                 global_key_to_upload_dict[str(res["global_key"])] = res    
-#                 if verbose:
-#                     x += 1
-#                     percent_complete = math.ceil((x / len(df)*100))
-#                     if percent_complete%1 == 0 and (percent_complete!=dupe_print):
-#                         print(f'{str(percent_complete)}% complete')          
-#                         dupe_print = percent_complete
+    with ThreadPoolExecutor(max_workers=8) as exc:
+        failed_global_keys = []
+        futures = []
         if verbose:
-            print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
-        return True, global_key_to_upload_dict  
-    except Exception as e:
-        print(e)
-        if res:
-            return False, res
+            print(f'Submitting data rows...')
+        for index, row in df.iterrows():
+            futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
+        if verbose:
+            print(f'Processing data rows...')
+            for f in tqdm(as_completed(futures)):
+                res = f.result()
+                if type(res)==dict:
+                    global_key_to_upload_dict[str(res["global_key"])] = res    
+                else:
+                    failed_global_keys.append(res)
         else:
-            return False, False
+            for f in as_completed(futures):
+                res = f.result()
+                if type(res)==dict:
+                    global_key_to_upload_dict[str(res["global_key"])] = res    
+                else:
+                    failed_global_keys.append(res)             
+    if verbose:
+        print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
+    if failed_global_keys:
+        if global_key_to_upload_dict:
+            print(f'There were {len(failed_global_keys)} errors in creating your upload list - upload will continue and return a list of failed global keys')
+        else:
+            print(f'There were {len(failed_global_keys)} errors in creating your upload list - upload will not continue')
+    return global_key_to_upload_dict, failed_global_keys
   
 def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, row_data_col:str,
@@ -85,23 +79,26 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
-    row_data = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
-#     row_data = base_client.upload_local_file(file_path=str(row[row_data_col])) if local_files else str(row[row_data_col])
-    metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
-    if metadata_index:
-        for metadata_field_name in metadata_index.keys():
-            input_metadata = base_client.process_metadata_value(
-                metadata_value=row[metadata_field_name],
-                metadata_type=metadata_index[metadata_field_name], 
-                parent_name=metadata_field_name,
-                metadata_name_key_to_schema=metadata_name_key_to_schema, 
-                divider=divider
-            )
-            if input_metadata:
-                metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
-            else:
-                continue
-    return {"row_data":row_data,"global_key":str(row[global_key_col]),"external_id":str(row[external_id_col]),"metadata_fields":metadata_fields}                
+    try:
+        row_data = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
+        metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
+        if metadata_index:
+            for metadata_field_name in metadata_index.keys():
+                input_metadata = base_client.process_metadata_value(
+                    metadata_value=row[metadata_field_name],
+                    metadata_type=metadata_index[metadata_field_name], 
+                    parent_name=metadata_field_name,
+                    metadata_name_key_to_schema=metadata_name_key_to_schema, 
+                    divider=divider
+                )
+                if input_metadata:
+                    metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
+                else:
+                    continue
+        return_value = {"row_data":row_data,"global_key":str(row[global_key_col]),"external_id":str(row[external_id_col]),"metadata_fields":metadata_fields}                                 
+    except Exception as e:
+        return_value = [str(row[global_key_col]), e]
+    return return_value
   
 def get_columns_function(df):
     """Grabs all column names from a Pandas DataFrame
