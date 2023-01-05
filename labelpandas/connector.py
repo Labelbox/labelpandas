@@ -20,7 +20,9 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         divider         :   Optional (str) - String delimiter for all name keys generated
         verbose         :   Optional (bool) - If True, prints information about code execution
     Returns:
-        Two values - a success value, and a dictionary where {key=global_key : value = {"row_data", "global_key", "external_id", "metadata_fields"}}
+        Two values:
+        - global_key_to_upload_dict - Dictionary where {key=global_key : value=data row dictionary in upload format}
+        - errors - List of dictionaries containing conversion error information; see connector.create_data_rows() for more information
     """    
     if verbose:
         print(f'Creating upload list - {len(df)} rows in Pandas DataFrame')
@@ -72,27 +74,29 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
         local_files                 :   Optional (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls                
         divider                     :   Optional (str) - String delimiter for all name keys generated
     Returns:
-        Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
+        A dictionary with "error" and "data_row" keys:
+        - "error" - If there's value in the "error" key, the script will scip it on upload and return the error at the end
+        - "data_row" - Dictionary with "global_key" "external_id" "row_data" and "metadata_fields" keys in the proper format to-be-uploaded
     """
+    return_value = {"error" : None, "data_row" : {}}
     try:
-        row_data = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
+        return_value["result"]["row_data"] = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
+        return_value["result"]["global_key"] = str(row[global_key_col])
+        return_value["result"]["external_id"] = str(row[external_id_col])
         metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
         if metadata_index:
             for metadata_field_name in metadata_index.keys():
                 input_metadata = base_client.process_metadata_value(
-                    metadata_value=row[metadata_field_name],
-                    metadata_type=metadata_index[metadata_field_name], 
-                    parent_name=metadata_field_name,
-                    metadata_name_key_to_schema=metadata_name_key_to_schema, 
-                    divider=divider
+                    metadata_value=row[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
+                    parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
                 )
                 if input_metadata:
                     metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
                 else:
                     continue
-        return_value = {"error" : None, "result" : {"row_data":row_data,"global_key":str(row[global_key_col]),"external_id":str(row[external_id_col]),"metadata_fields":metadata_fields}}
+        return_value["result"]["metadata_fields"] = metadata_fields
     except Exception as e:
-        return_value = {"error" : e, "result" : None}
+        return_value["error"] = e
     return return_value
   
 def get_columns_function(df):
