@@ -32,6 +32,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
     with ThreadPoolExecutor() as exc:
         futures = []
         x = 0
+        dupe_print = 0
         if verbose:
             print(f'Submitting data rows...')
         for index, row in df.iterrows():
@@ -44,8 +45,9 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
             if verbose:
                 x += 1
                 percent_complete = math.ceil((x / len(df)*100))
-                if percent_complete%10 == 0:
+                if percent_complete%10 == 0 and (percent_complete!=dupe_print):
                     print(f'{str(percent_complete)}% complete')          
+                    dupe_print = percent_complete
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict  
