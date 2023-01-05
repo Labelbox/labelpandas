@@ -64,10 +64,11 @@ class Client():
         )
         
         if conversion_errors:
+            print(f'There were {len(conversion_errors)} errors in creating your upload list - the second return value will be a list of errors.')
             if global_key_to_upload_dict:
-                print(f'There were {len(conversion_errors)} errors in creating your upload list - upload will continue and return a list of errors as a second return value')
+                print(f'Data row upload will continue - the first return value will be data row upload results')
             else:
-                print(f'There were {len(conversion_errors)} errors in creating your upload list - upload will not continue')  
+                print(f'Data row upload will not continue')  
                 return [], errors
                 
         # Upload your data rows to Labelbox
@@ -76,10 +77,7 @@ class Client():
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
-        if conversion_errors:
-            return upload_results, conversion_errors
-        else:
-            return upload_results, []
+        return upload_results, conversion_errors
     
     # def upsert_table_metadata():
     #     return table
