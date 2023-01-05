@@ -6,7 +6,8 @@ from tqdm.autonotebook import tqdm
 import math
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
-                       global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, divider:str="///", verbose=False):
+                       global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, 
+                       divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
@@ -16,9 +17,12 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row data
         external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
         metadata_index  :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type}
-        local_files     :   Optional (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
-        divider         :   Optional (str) - String delimiter for all name keys generated
-        verbose         :   Optional (bool) - If True, prints information about code execution
+                                metadata_type must be either "enum", "string", "datetime" or "number"
+        local_files     :   Optional (bool) - Determines how to handle row_data_col values
+                                If True, treats row_data_col values as file paths uploads the local files to Labelbox
+                                If False, treats row_data_col values as urls (assuming delegated access is set up)
+        divider         :   Optional (str) - String delimiter for all name keys generated for parent/child schemas
+        verbose         :   Optional (bool) - If True, prints details about code execution; if False, prints minimal information
     Returns:
         Two values:
         - global_key_to_upload_dict - Dictionary where {key=global_key : value=data row dictionary in upload format}
@@ -62,7 +66,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
   
 def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, row_data_col:str,
-                     global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files=False, divider:str="///"):
+                     global_key_col:str, external_id_col:str, metadata_index:dict, local_files:bool, divider:str):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
         lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
@@ -71,11 +75,14 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
         metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
         metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
         row_data_col                :   Required (str) - Column containing asset URL or file path        
-        global_key_col              :   Optional (str) - Column name containing the data row global key
-        external_id_col             :   Optional (str) - Column name containing the data row external ID
-        metadata_index              :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type}
-        local_files                 :   Optional (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls                
-        divider                     :   Optional (str) - String delimiter for all name keys generated
+        global_key_col              :   Required (str) - Column name containing the data row global key
+        external_id_col             :   Required (str) - Column name containing the data row external ID
+        metadata_index              :   Required (dict) - Dictionary where {key=column_name : value=metadata_type}
+                                            metadata_type must be either "enum", "string", "datetime" or "number"
+        local_files                 :   Required (bool) - Determines how to handle row_data_col values
+                                            If True, treats row_data_col values as file paths uploads the local files to Labelbox
+                                            If False, treats row_data_col values as urls (assuming delegated access is set up)
+        divider                     :   Required (str) - String delimiter for all name keys generated for parent/child schemas
     Returns:
         A dictionary with "error" and "data_row" keys:
         - "error" - If there's value in the "error" key, the script will scip it on upload and return the error at the end
@@ -126,7 +133,7 @@ def add_column_function(df, column_name:str, default_value=""):
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
         column_name     :   Required (str) - Column name
-        default_value   :   Optional - Value to insert into column
+        default_value   :   Optional - Value to insert for every row in the newly created column
     Returns:
         Your Pandas DataFrame with a new column   
     """
