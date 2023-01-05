@@ -45,7 +45,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
             if verbose:
                 x += 1
                 percent_complete = math.ceil((x / len(df)*100))
-                if percent_complete%10 == 0 and (percent_complete!=dupe_print):
+                if percent_complete%5 == 0 and (percent_complete!=dupe_print):
                     print(f'{str(percent_complete)}% complete')          
                     dupe_print = percent_complete
     if verbose:
