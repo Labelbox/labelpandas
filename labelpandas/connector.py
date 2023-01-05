@@ -53,11 +53,6 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
                     global_key_to_upload_dict[str(res["global_key"])] = res       
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
-    if failed_global_keys:
-        if global_key_to_upload_dict:
-            print(f'There were {len(failed_global_keys)} errors in creating your upload list - upload will continue and return a list of failed global keys')
-        else:
-            print(f'There were {len(failed_global_keys)} errors in creating your upload list - upload will not continue')
     return global_key_to_upload_dict, failed_global_keys
   
 def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series,
