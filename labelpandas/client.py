@@ -43,7 +43,7 @@ class Client():
             verbose         :   Required (bool) - If True, prints information about code execution
             divider         :   Optional (str) - String delimiter for all name keys generated                    
         Returns:
-            List of errors from data row upload - if successful, is an empty list
+            List of errors from data row upload and a list of errors from table conversion - if either is successful, is an empty list
         """    
         
         # Ensure all your metadata_index keys are metadata fields in Labelbox and that your Pandas DataFrame has all the right columns
@@ -57,22 +57,29 @@ class Client():
             return None   
         
         # Create a dictionary where {key=global_key : value=labelbox_upload_dictionary} - this is unique to Pandas
-        result, global_key_to_upload_dict = connector.create_upload_dict(
+        global_key_to_upload_dict, conversion_errors = connector.create_upload_dict(
             df=df, lb_client=self.lb_client, base_client=self.base_client,
             row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
             metadata_index=metadata_index, local_files=local_files, divider=divider, verbose=verbose
         )
         
-        if not result:
-            return global_key_to_upload_dict
+        if conversion_errors:
+            if global_key_to_upload_dict:
+                print(f'There were {len(conversion_errors)} errors in creating your upload list - upload will continue and return a list of errors as a second return value')
+            else:
+                print(f'There were {len(conversion_errors)} errors in creating your upload list - upload will not continue')  
+                return [], errors
                 
         # Upload your data rows to Labelbox
         upload_results = self.base_client.batch_create_data_rows(
             dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
-
-        return upload_results
+        
+        if conversion_errors:
+            return upload_results, conversion_errors
+        else:
+            return upload_results, []
     
     # def upsert_table_metadata():
     #     return table
