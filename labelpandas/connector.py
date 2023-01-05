@@ -65,7 +65,8 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
     Returns:
         Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
     """
-    row_data = base_client.upload_local_file(file_path=str(row[row_data_col])) if local_files else str(row[row_data_col])
+    row_data = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
+#     row_data = base_client.upload_local_file(file_path=str(row[row_data_col])) if local_files else str(row[row_data_col])
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
