@@ -1,14 +1,16 @@
-# Labelbox Connector for Pandas
+# Open-Source Labelbox Connector for Pandas
 
-Access the Labelbox Connector for Pandas, an open-source Python API that handles CSVs and Dataframes very well
+[Labelbox](https://labelbox.com/) enables teams to maximize the value of their unstructured data with its enterprise-grade training data platform. For ML use cases, Labelbox has tools to deploy labelers to annotate data at massive scale, diagnose model performance to prioritize labeling, and plug in existing ML models to speed up labeling. For non-ML use cases, Labelbox has a powerful catalog with auto-computed similarity scores that users can use add metadata tags to large amounts of data with a couple clicks.
+
+[Pandas](https://pandas.pydata.org/) stands as the premier open-source Python library for handling CSV and tabluar data and as one of the most widely used Python libraries in the world.
+
+This GitHub repo stands as an open-source Python library, moderated by the Labelbox Solutions team, in facilitating Labelbox users in uploading data to Labelbox and retreiving data from Labelbox in tabular / CSV format. 
+
+We strongly encourage collaboration - please free to fork this repo and tweak the code base to work for you own data, and make pull requests if you have suggestions on how to enhance the overall experience, add new features, or improve general performance. 
+
+All core functions come out of `labelpandas.Client()` which currently has the following functions:
+
 - `labelpandas.client.create_data_rows_from_table` :   Creates Labelbox data rows (and metadata) given a Pandas table ([example notebook](https://github.com/Labelbox/labelpandas/blob/main/notebooks/create_data_rows_example.ipynb))
-- `labelpandas.client.create_table_from_dataset`   :   Creates a Pandas table given a Labelbox dataset (coming soon)
-- `labelpandas.client.upsert_table_metadata`       :   Updates Pandas table metadata columns given a Labelbox dataset (coming soon)
-- `labelpandas.client.upsert_labelbox_metadata`    :   Updates Labelbox metadata given a Pandas table (coming soon)
-
-The Demo code supplied in this Github is designed to run in a Google Colab, but the code can be adapted to any notebook environment.
-
-Labelbox is the enterprise-grade training data solution with fast AI enabled labeling tools, labeling automation, human workforce, data management, a powerful API for integration & SDK for extensibility. Visit [Labelbox](http://labelbox.com/) for more information.
 
 This library is currently in beta. It may contain errors or inaccuracies and may not function as well as commercially released software. Please report any issues/bugs via [Github Issues](https://github.com/Labelbox/labelpandas/issues).
 
