@@ -45,14 +45,14 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
                 if res['error']:
                     errors.append(res)
                 else:
-                    global_key_to_upload_dict[str(res['result']["global_key"])] = res['result']  
+                    global_key_to_upload_dict[str(res['data_row']["global_key"])] = res['data_row']  
         else:
             for f in as_completed(futures):
                 res = f.result()
                 if res['error']:
                     errors.append(res)
                 else:
-                    global_key_to_upload_dict[str(res['result']["global_key"])] = res['result']
+                    global_key_to_upload_dict[str(res['data_row']["global_key"])] = res['data_row']
     if verbose:
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict, errors
@@ -80,9 +80,9 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
     """
     return_value = {"error" : None, "data_row" : {}}
     try:
-        return_value["result"]["row_data"] = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
-        return_value["result"]["global_key"] = str(row[global_key_col])
-        return_value["result"]["external_id"] = str(row[external_id_col])
+        return_value["data_row"]["row_data"] = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
+        return_value["data_row"]["global_key"] = str(row[global_key_col])
+        return_value["data_row"]["external_id"] = str(row[external_id_col])
         metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
         if metadata_index:
             for metadata_field_name in metadata_index.keys():
@@ -94,7 +94,7 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
                     metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
                 else:
                     continue
-        return_value["result"]["metadata_fields"] = metadata_fields
+        return_value["data_row"]["metadata_fields"] = metadata_fields
     except Exception as e:
         return_value["error"] = e
     return return_value
