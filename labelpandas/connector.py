@@ -2,7 +2,7 @@ from labelbase import Client as baseClient
 from labelbox import Client
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from tqdm import tqdm_notebook as tqdm
+from tqdm.autonotebook import tqdm
 import math
 
 def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
