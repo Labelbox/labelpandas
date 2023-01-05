@@ -12,7 +12,7 @@ class Client():
         lb_client                   :   labelbox.Client object
         base_client                 :   labelbase.Client object
     Key Functions:
-        create_data_rows_from_table :   Creates Labelbox data rows (and metadata) given a Pandas DataFrame
+        create_data_rows_from_table :   Creates Labelbox data rows (and metadata) given a Pandas DataFrame an an existing Labelbox Dataset
     """       
     def __init__(
         self,           
@@ -35,13 +35,18 @@ class Client():
             df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
             lb_dataset      :   Required (labelbox.schema.dataset.Dataset) - Labelbox dataset to add data rows to            
             row_data_col    :   Required (str) - Column containing asset URL or file path
-            local_files     :   Required (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
-            global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row data
-            external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
-            metadata_index  :   Required (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
-            skip_duplicates :   Optional (bool) - If True, will skip duplicate global_keys, otherwise will generate a unique global_key with a suffix "_1", "_2" and so on
-            verbose         :   Required (bool) - If True, prints information about code execution
-            divider         :   Optional (str) - String delimiter for all name keys generated                    
+            local_files     :   Required (bool) - Determines how to handle row_data_col values
+                                    If True, treats row_data_col values as file paths uploads the local files to Labelbox
+                                    If False, treats row_data_col values as urls (assuming delegated access is set up)
+            global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row_data_col
+            external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global_key_col
+            metadata_index  :   Required (dict) - Dictionary where {key=column_name : value=metadata_type}
+                                    metadata_type must be either "enum", "string", "datetime" or "number"
+            skip_duplicates :   Optional (bool) - Determines how to handle if a global key to-be-uploaded is already in use
+                                    If True, will skip duplicate global_keys and not upload them
+                                    If False, will generate a unique global_key with a suffix "_1", "_2" and so on
+            verbose         :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
+            divider         :   Optional (str) - String delimiter for all name keys generated for parent/child schemas
         Returns:
             A dictionary with "upload_results" and "conversion_errors" keys
             - "upload_results" key pertains to the results of the data row upload itself
