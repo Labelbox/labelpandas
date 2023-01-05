@@ -20,7 +20,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         divider         :   Optional (str) - String delimiter for all name keys generated
         verbose         :   Optional (bool) - If True, prints information about code execution
     Returns:
-        Two items - the global_key, and a dictionary with "row_data", "global_key", "external_id" and "metadata_fields" keys
+        Two values - a success value, and a dictinoary where {key=global_key : value = {"row_data", "global_key", "external_id", "metadata_fields"}}
     """    
     if verbose:
         print(f'Creating upload list - {len(df)} rows in Pandas DataFrame')
@@ -29,28 +29,35 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
     metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
     metadata_name_key_to_schema = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True) 
     global_key_to_upload_dict = {}
-    with ThreadPoolExecutor() as exc:
-        futures = []
-        x = 0
-        dupe_print = 0
-        if verbose:
-            print(f'Submitting data rows...')
-        for index, row in df.iterrows():
-            futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
-        if verbose:
-            print(f'Processing data rows...')        
-        for f in as_completed(futures):
-            res = f.result()
-            global_key_to_upload_dict[str(res["global_key"])] = res    
+    try:
+        with ThreadPoolExecutor() as exc:
+            futures = []
+            x = 0
+            dupe_print = 0
             if verbose:
-                x += 1
-                percent_complete = math.ceil((x / len(df)*100))
-                if percent_complete%1 == 0 and (percent_complete!=dupe_print):
-                    print(f'{str(percent_complete)}% complete')          
-                    dupe_print = percent_complete
-    if verbose:
-        print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
-    return global_key_to_upload_dict  
+                print(f'Submitting data rows...')
+            for index, row in df.iterrows():
+                futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
+            if verbose:
+                print(f'Processing data rows...')        
+            for f in as_completed(futures):
+                res = f.result()
+                global_key_to_upload_dict[str(res["global_key"])] = res    
+                if verbose:
+                    x += 1
+                    percent_complete = math.ceil((x / len(df)*100))
+                    if percent_complete%1 == 0 and (percent_complete!=dupe_print):
+                        print(f'{str(percent_complete)}% complete')          
+                        dupe_print = percent_complete
+        if verbose:
+            print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
+        return True, global_key_to_upload_dict  
+    except Exception as e:
+        print(e)
+        if res:
+            return False, res
+        else:
+            return False, False
   
 def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, row_data_col:str,
