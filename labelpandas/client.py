@@ -43,7 +43,9 @@ class Client():
             verbose         :   Required (bool) - If True, prints information about code execution
             divider         :   Optional (str) - String delimiter for all name keys generated                    
         Returns:
-            List of errors from data row upload and a list of errors from table conversion - if either is successful, is an empty list
+            A dictionary with "upload_results" and "conversion_errors" keys
+            - "upload_results" key pertains to the results of the data row upload itself
+            - "conversion_errors" key pertains to any errors related to data row conversion
         """    
         
         # Ensure all your metadata_index keys are metadata fields in Labelbox and that your Pandas DataFrame has all the right columns
@@ -54,7 +56,7 @@ class Client():
         
         # If df returns False, the sync failed - terminate the upload
         if type(df) == bool:
-            return [], []
+            return {"upload_results" : [], "conversion_errors" : []}
         
         # Create a dictionary where {key=global_key : value=labelbox_upload_dictionary} - this is unique to Pandas
         global_key_to_upload_dict, conversion_errors = connector.create_upload_dict(
@@ -70,7 +72,7 @@ class Client():
                 print(f'Data row upload will continue - the first return value will be data row upload results')
             else:
                 print(f'Data row upload will not continue')  
-                return [], errors
+                return {"upload_results" : [], "conversion_errors" : errors}
                 
         # Upload your data rows to Labelbox
         upload_results = self.base_client.batch_create_data_rows(
@@ -78,7 +80,7 @@ class Client():
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
-        return upload_results, conversion_errors
+        return {"upload_results" : upload_results, "conversion_errors" : conversion_errors}
     
     # def upsert_table_metadata():
     #     return table
