@@ -57,11 +57,14 @@ class Client():
             return None   
         
         # Create a dictionary where {key=global_key : value=labelbox_upload_dictionary} - this is unique to Pandas
-        global_key_to_upload_dict = connector.create_upload_dict(
+        result, global_key_to_upload_dict = connector.create_upload_dict(
             df=df, lb_client=self.lb_client, base_client=self.base_client,
             row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
             metadata_index=metadata_index, local_files=local_files, divider=divider, verbose=verbose
         )
+        
+        if not result:
+            return global_key_to_upload_dict
                 
         # Upload your data rows to Labelbox
         upload_results = self.base_client.batch_create_data_rows(
