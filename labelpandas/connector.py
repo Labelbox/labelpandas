@@ -15,7 +15,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         row_data_col    :   Required (str) - Column containing asset URL or file path
         global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row data
         external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
-        metadata_index  :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
+        metadata_index  :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type}
         local_files     :   Optional (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls
         divider         :   Optional (str) - String delimiter for all name keys generated
         verbose         :   Optional (bool) - If True, prints information about code execution
@@ -30,14 +30,17 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
     external_id_col = external_id_col if external_id_col else global_key_col       
     metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
     metadata_name_key_to_schema = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True) 
-    global_key_to_upload_dict = {}
     with ThreadPoolExecutor(max_workers=8) as exc:
+        global_key_to_upload_dict = {}
         errors = []
         futures = []
         if verbose:
             print(f'Submitting data rows...')
         for index, row in df.iterrows():
-            futures.append(exc.submit(create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider))
+            futures.append(exc.submit(
+                create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
+            ))
         if verbose:
             print(f'Processing data rows...')
             for f in tqdm(as_completed(futures)):
@@ -68,9 +71,9 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
         metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
         metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
         row_data_col                :   Required (str) - Column containing asset URL or file path        
-        global_key_col              :   Optional (str) - Column name containing the data row global key - defaults to row data
-        external_id_col             :   Optional (str) - Column name containing the data row external ID - defaults to global key
-        metadata_index              :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type} - metadata_type = "enum", "string", "datetime" or "number"
+        global_key_col              :   Optional (str) - Column name containing the data row global key
+        external_id_col             :   Optional (str) - Column name containing the data row external ID
+        metadata_index              :   Optional (dict) - Dictionary where {key=column_name : value=metadata_type}
         local_files                 :   Optional (bool) - If True, will create urls for local files; if False, uploads `row_data_col` as urls                
         divider                     :   Optional (str) - String delimiter for all name keys generated
     Returns:
