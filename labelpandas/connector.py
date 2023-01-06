@@ -107,6 +107,7 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
         return_value["data_row"]["metadata_fields"] = metadata_fields
     except Exception as e:
         return_value["error"] = e
+        return_value["data_row"]["global_key"] = str(row[global_key_col])
     return return_value
   
 def get_columns_function(df):
