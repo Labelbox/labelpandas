@@ -5,12 +5,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm.autonotebook import tqdm
 import math
 
-def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
+def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, 
                        divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
-        df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
+        table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
         lb_client       :   Required (labelbox.client.Client) - Labelbox Client object
         base_client     :   Required (labelbase.client.Client) - Labelbase Client object
         row_data_col    :   Required (str) - Column containing asset URL or file path
@@ -29,7 +29,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         - errors - List of dictionaries containing conversion error information; see connector.create_data_rows() for more information
     """    
     if verbose:
-        print(f'Creating upload list - {len(df)} rows in Pandas DataFrame')
+        print(f'Creating upload list - {len(table)} rows in Pandas DataFrame')
     global_key_col = global_key_col if global_key_col else row_data_col
     external_id_col = external_id_col if external_id_col else global_key_col       
     metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
@@ -40,7 +40,7 @@ def create_upload_dict(df:pandas.core.frame.DataFrame, lb_client:Client, base_cl
         futures = []
         if verbose:
             print(f'Submitting data rows...')
-        for index, row in df.iterrows():
+        for index, row in table.iterrows():
             futures.append(exc.submit(
                 create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                 row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
@@ -110,16 +110,16 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
         return_value["data_row"]["global_key"] = str(row[global_key_col])
     return return_value
   
-def get_columns_function(df):
+def get_columns_function(table:pandas.core.frame.DataFrame):
     """Grabs all column names from a Pandas DataFrame
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
     Returns:
         List of strings corresponding to all column names
     """
-    return [col for col in df.columns]
+    return [col for col in table.columns]
 
-def get_unique_values_function(df, column_name:str):
+def get_unique_values_function(table:pandas.core.frame.DataFrame, column_name:str):
     """Grabs all unique values from a column in a Pandas DataFrame
     Args:
         df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
@@ -127,16 +127,16 @@ def get_unique_values_function(df, column_name:str):
     Returns:
         List of strings corresponding to all unique values in a column
     """    
-    return list(df[column_name].unique())
+    return list(table[column_name].unique())
 
-def add_column_function(df, column_name:str, default_value=""):
+def add_column_function(table:pandas.core.frame.DataFrame, column_name:str, default_value=""):
     """ Adds a column of empty values to an existing Pandas DataFrame
     Args:
-        df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
+        table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
         column_name     :   Required (str) - Column name
         default_value   :   Optional - Value to insert for every row in the newly created column
     Returns:
-        Your Pandas DataFrame with a new column   
+        Your table with a new column given the column_name and default_value
     """
-    df[column_name] = default_value
-    return df
+    table[column_name] = default_value
+    return table
