@@ -28,11 +28,11 @@ class Client():
     #     return table 
 
     def create_data_rows_from_table(
-        self, df:pd.core.frame.DataFrame, lb_dataset:labelboxDataset, row_data_col:str, global_key_col=None, external_id_col=None,
+        self, dataframe:pd.core.frame.DataFrame, lb_dataset:labelboxDataset, row_data_col:str, global_key_col=None, external_id_col=None,
         metadata_index:dict={}, local_files:bool=False, skip_duplicates:bool=False, verbose:bool=False, divider="___"):
         """ Creates Labelbox data rows given a Pandas table and a Labelbox Dataset
         Args:
-            df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
+            dataframe       :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
             lb_dataset      :   Required (labelbox.schema.dataset.Dataset) - Labelbox dataset to add data rows to            
             row_data_col    :   Required (str) - Column containing asset URL or file path
             local_files     :   Required (bool) - Determines how to handle row_data_col values
@@ -54,18 +54,18 @@ class Client():
         """    
         
         # Ensure all your metadata_index keys are metadata fields in Labelbox and that your Pandas DataFrame has all the right columns
-        df = self.base_client.sync_metadata_fields(
-            table=df, get_columns_function=connector.get_columns_function, add_column_function=connector.add_column_function, 
+        dataframe = self.base_client.sync_metadata_fields(
+            table=dataframe, get_columns_function=connector.get_columns_function, add_column_function=connector.add_column_function, 
             get_unique_values_function=connector.get_unique_values_function, metadata_index=metadata_index, verbose=verbose
         )
         
         # If df returns False, the sync failed - terminate the upload
-        if type(df) == bool:
+        if type(dataframe) == bool:
             return {"upload_results" : [], "conversion_errors" : []}
         
         # Create a dictionary where {key=global_key : value=labelbox_upload_dictionary} - this is unique to Pandas
         global_key_to_upload_dict, conversion_errors = connector.create_upload_dict(
-            df=df, lb_client=self.lb_client, base_client=self.base_client,
+            table=dataframe, lb_client=self.lb_client, base_client=self.base_client,
             row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
             metadata_index=metadata_index, local_files=local_files, divider=divider, verbose=verbose
         )
