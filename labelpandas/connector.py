@@ -113,7 +113,7 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
 def get_columns_function(table:pandas.core.frame.DataFrame):
     """Grabs all column names from a Pandas DataFrame
     Args:
-        df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
+        table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
     Returns:
         List of strings corresponding to all column names
     """
@@ -122,7 +122,7 @@ def get_columns_function(table:pandas.core.frame.DataFrame):
 def get_unique_values_function(table:pandas.core.frame.DataFrame, column_name:str):
     """Grabs all unique values from a column in a Pandas DataFrame
     Args:
-        df              :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
+        table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
         column_name     :   Required (str) - Column name
     Returns:
         List of strings corresponding to all unique values in a column
