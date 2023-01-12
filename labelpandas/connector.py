@@ -30,6 +30,8 @@ def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, base
     """    
     if verbose:
         print(f'Creating upload list - {len(table)} rows in Pandas DataFrame')
+    if get_table_length_function(table=table) != get_unique_values_function(table=table, column_name=global_key_col):
+        print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row for duplicate global keys")
     global_key_col = global_key_col if global_key_col else row_data_col
     external_id_col = external_id_col if external_id_col else global_key_col       
     metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
@@ -146,3 +148,12 @@ def add_column_function(table:pandas.core.frame.DataFrame, column_name:str, defa
     """
     table[column_name] = default_value
     return table
+
+def get_table_length_function(table:pandas.core.frame.DataFrame):
+    """ Tells you the size of a Pandas DataFrame
+    Args:
+        table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
+    Returns:
+        The length of your table as an integer
+    """  
+    return len(table)
