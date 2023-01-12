@@ -40,11 +40,17 @@ def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, base
         futures = []
         if verbose:
             print(f'Submitting data rows...')
-        for index, row in table.iterrows():
-            futures.append(exc.submit(
-                create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
-                row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
-            ))
+            for index, row in tqdm(table.iterrows()):
+                futures.append(exc.submit(
+                    create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
+                ))           
+        else:
+            for index, row in table.iterrows():
+                futures.append(exc.submit(
+                    create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
+                ))
         if verbose:
             print(f'Processing data rows...')
             for f in tqdm(as_completed(futures)):
