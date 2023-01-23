@@ -1,18 +1,17 @@
-from labelbase import Client as baseClient
+from labelbase.metadata import get_metadata_schema_to_name_key, process_metadata_value
 from labelbox import Client
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm.autonotebook import tqdm
 import math
 
-def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, base_client:baseClient, row_data_col:str, 
+def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, 
                        divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
         lb_client       :   Required (labelbox.client.Client) - Labelbox Client object
-        base_client     :   Required (labelbase.client.Client) - Labelbase Client object
         row_data_col    :   Required (str) - Column containing asset URL or file path
         global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row data
         external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
@@ -34,8 +33,8 @@ def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, base
         print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row for duplicate global keys")
     global_key_col = global_key_col if global_key_col else row_data_col
     external_id_col = external_id_col if external_id_col else global_key_col       
-    metadata_schema_to_name_key = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=False)
-    metadata_name_key_to_schema = base_client.get_metadata_schema_to_name_key(lb_mdo=False, divider=divider, invert=True) 
+    metadata_schema_to_name_key = get_metadata_schema_to_name_key(client=lb_client, lb_mdo=False, divider=divider, invert=False)
+    metadata_name_key_to_schema = get_metadata_schema_to_name_key(client=lb_client, lb_mdo=False, divider=divider, invert=True) 
     with ThreadPoolExecutor(max_workers=8) as exc:
         global_key_to_upload_dict = {}
         errors = []
@@ -44,13 +43,13 @@ def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, base
             print(f'Submitting data rows...')
             for index, row in tqdm(table.iterrows()):
                 futures.append(exc.submit(
-                    create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    create_data_rows, lb_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
                 ))           
         else:
             for index, row in table.iterrows():
                 futures.append(exc.submit(
-                    create_data_rows, lb_client, base_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    create_data_rows, lb_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
                 ))
         if verbose:
@@ -72,13 +71,12 @@ def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, base
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict, errors
   
-def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.series.Series,
+def create_data_rows(lb_client:Client, row:pandas.core.series.Series,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, row_data_col:str,
                      global_key_col:str, external_id_col:str, metadata_index:dict, local_files:bool, divider:str):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
         lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
-        base_client                 :   Required (labelbase.client.Client) - Labelbase Client object
         row                         :   Required (pandas.core.series.Series) - Pandas Series object, corresponds to one row in a df.iterrow()
         metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
         metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
@@ -104,8 +102,8 @@ def create_data_rows(lb_client:Client, base_client:baseClient, row:pandas.core.s
         metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
         if metadata_index:
             for metadata_field_name in metadata_index.keys():
-                input_metadata = base_client.process_metadata_value(
-                    metadata_value=row[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
+                input_metadata = process_metadata_value(
+                    client=lb_client, metadata_value=row[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
                     parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
                 )
                 if input_metadata:
