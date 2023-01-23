@@ -1,6 +1,7 @@
 from labelbox import Client as labelboxClient
-from labelbase import Client as labelbaseClient
 from labelbox.schema.dataset import Dataset as labelboxDataset
+from labelbase.metadata import sync_metadata_fields
+from labelbase.uploaders import batch_create_data_rows
 import pandas as pd
 from labelpandas import connector
 
@@ -22,7 +23,6 @@ class Client():
         lb_app_url="https://app.labelbox.com"):
 
         self.lb_client = labelboxClient(lb_api_key, endpoint=lb_endpoint, enable_experimental=lb_enable_experimental, app_url=lb_app_url)
-        self.base_client = labelbaseClient(lb_api_key, lb_endpoint=lb_endpoint, lb_enable_experimental=lb_enable_experimental, lb_app_url=lb_app_url)
            
     # def create_table_from_dataset(): 
     #     return table 
@@ -54,8 +54,8 @@ class Client():
         """    
         
         # Ensure all your metadata_index keys are metadata fields in Labelbox and that your Pandas DataFrame has all the right columns
-        table = self.base_client.sync_metadata_fields(
-            table=table, get_columns_function=connector.get_columns_function, add_column_function=connector.add_column_function, 
+        table = sync_metadata_fields(
+            client=self.lb_client, table=table, get_columns_function=connector.get_columns_function, add_column_function=connector.add_column_function, 
             get_unique_values_function=connector.get_unique_values_function, metadata_index=metadata_index, verbose=verbose
         )
         
@@ -65,7 +65,7 @@ class Client():
         
         # Create a dictionary where {key=global_key : value=labelbox_upload_dictionary} - this is unique to Pandas
         global_key_to_upload_dict, conversion_errors = connector.create_upload_dict(
-            table=table, lb_client=self.lb_client, base_client=self.base_client,
+            table=table, lb_client=self.lb_client,
             row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
             metadata_index=metadata_index, local_files=local_files, divider=divider, verbose=verbose
         )
@@ -80,8 +80,8 @@ class Client():
                 return {"upload_results" : [], "conversion_errors" : errors}
                 
         # Upload your data rows to Labelbox
-        upload_results = self.base_client.batch_create_data_rows(
-            dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
+        upload_results = batch_create_data_rows(
+            client=self.lb_client, dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
