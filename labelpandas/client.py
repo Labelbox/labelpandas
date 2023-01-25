@@ -11,7 +11,6 @@ class Client():
         lb_api_key                  :   Required: labelbox.client.Client()
     Attributes:
         lb_client                   :   labelbox.Client object
-        base_client                 :   labelbase.Client object
     Key Functions:
         create_data_rows_from_table :   Creates Labelbox data rows (and metadata) given a Pandas DataFrame an an existing Labelbox Dataset
     """       
