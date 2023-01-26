@@ -27,12 +27,12 @@ def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, row_
         - global_key_to_upload_dict - Dictionary where {key=global_key : value=data row dictionary in upload format}
         - errors - List of dictionaries containing conversion error information; see connector.create_data_rows() for more information
     """    
-    if verbose:
-        print(f'Creating upload list - {len(table)} rows in Pandas DataFrame')
-    if get_table_length_function(table=table) != get_unique_values_function(table=table, column_name=global_key_col):
-        print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row for duplicate global keys")
     global_key_col = global_key_col if global_key_col else row_data_col
-    external_id_col = external_id_col if external_id_col else global_key_col       
+    external_id_col = external_id_col if external_id_col else global_key_col     
+    if verbose:
+        print(f'Creating upload list - {get_table_length_function(table)} rows in Pandas DataFrame')
+    if get_table_length_function(table=table) != get_unique_values_function(table=table, column_name=global_key_col):
+        print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row for duplicate global keys")     
     metadata_schema_to_name_key = get_metadata_schema_to_name_key(client=lb_client, lb_mdo=False, divider=divider, invert=False)
     metadata_name_key_to_schema = get_metadata_schema_to_name_key(client=lb_client, lb_mdo=False, divider=divider, invert=True) 
     with ThreadPoolExecutor(max_workers=8) as exc:
