@@ -1,7 +1,7 @@
 from labelbox import Client as labelboxClient
 from labelbox.schema.dataset import Dataset as labelboxDataset
 from labelbase.metadata import sync_metadata_fields
-from labelbase.uploaders import batch_create_data_rows
+from labelbase.uploader import batch_create_data_rows
 import pandas as pd
 from labelpandas import connector
 
