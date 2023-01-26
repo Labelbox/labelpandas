@@ -48,16 +48,20 @@ class Client():
                                         attachment_type must be one of "IMAGE", "VIDEO", "RAW_TEXT", "HTML", "TEXT_URL"
             annotation_index    :   Optional (dict) - Dictionary where {key=column_name : value=annotation_type} -- requires a project_id_col and an upload_method
                                         annotation_type must be one of the following - the format of the cell value must align with annotation type
-                                                bbox    :   [name_paths], [top, left, height, width]
-                                                polygon :   [name_paths], [(x, y), (x, y), (x, y)...(x, y)]
-                                                point   :   [name_paths], [x, y]
-                                                mask    :   [name_paths], 
-                                                line    :   [name_paths], [(x, y), (x, y), (x, y)...(x, y)]
-                                                ner     :   [name_paths], [start, end]
+                                                bbox    :   [[name_paths], [top, left, height, width], [name_paths], [top, left, height, width]]
+                                                polygon :   [[name_paths], [(x, y), (x, y),...(x, y)], [name_paths], [(x, y), (x, y),...(x, y)]]
+                                                point   :   [[name_paths], [x, y], [name_paths], [x, y]]
+                                                mask    :   [[name_paths], URL], [name_paths], URL] OR [[name_paths], 2D_ARRAY], [name_paths], 2D_ARRAY]
+                                                                - URL must be a publicly accessible string
+                                                                - 2D_ARRAY must be a numpy array where mask values are the color (0,0)
+                                                line    :   [[name_paths], [(x, y), (x, y),...(x, y)], [name_paths], [(x, y), (x, y),...(x, y)]]
+                                                ner     :   [[name_paths], [start, end], [name_paths], [start, end]]
                                                 radio   :   [name_paths]
                                                 check   :   [name_paths]
                                                 text    :   name_path, [text value]
                                         name_paths is parent///child///parent///child - you can specify the delimiter with the `divider` argument
+                                        name_paths is passed as a list per annotation, since you can have multiple nested classifications in any given annotation
+                                        for tools, you can have multiple annotations of the same class in a given data row, so your input is a list of name_paths and annotation values
             upload_method       :   Optional (str) - Either "mal" or "import" - required if an annotation_index is provided                                               
             skip_duplicates     :   Optional (bool) - Determines how to handle if a global key to-be-uploaded is already in use
                                         If True, will skip duplicate global_keys and not upload them
