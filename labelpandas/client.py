@@ -1,7 +1,7 @@
 from labelbox import Client as labelboxClient
 from labelbox.schema.dataset import Dataset as labelboxDataset
 from labelbase.metadata import sync_metadata_fields
-from labelbase.uploader import batch_create_data_rows, batch_upload_annotations, batch_rows_to_project
+from labelbase import uploader
 import pandas as pd
 from labelpandas import connector
 
@@ -101,18 +101,27 @@ class Client():
                 return {"upload_results" : [], "conversion_errors" : errors}
                 
         # Upload your data rows to Labelbox
-        data_row_upload_results = batch_create_data_rows(
+        data_row_upload_results = uploader.batch_create_data_rows(
             client=self.lb_client, dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
+        # Default global_key_col if row_data_col not provided
+        global_key_col = global_key_col if global_key_col else row_data_col
+        
+        # Create a dictionary where {key=global_key : value=data_row_id}
+        global_key_to_data_row_id = uploader.create_global_key_to_data_row_dict(
+            client=self.lb_client, global_keys=connector.get_unique_values_function(table, global_key_col)
+        )
+        
         # Create a dictionary where {key=project_id : value=list_of_data_row_ids}, if applicable
         project_id_to_batch_dict = connector.create_batches(
-            client=self.lb_client, table=table, global_key_col=global_key_col, project_id_col=project_id_col
+            client=self.lb_client, table=table, global_key_col=global_key_col, 
+            project_id_col=project_id_col, global_key_to_data_row_id=global_key_to_data_row_id
         )
         
         # Batch data rows to projects, if applicable
-        batch_results = batch_rows_to_project(
+        batch_results = uploader.batch_rows_to_project(
             client=self.lb_client, project_id_to_batch_dict, priority=priority
         )
             
@@ -123,7 +132,7 @@ class Client():
         )
         
         # Upload your annotations to Labelbox, if applicable
-        annotation_upload_results = batch_upload_annotations(
+        annotation_upload_results = uploader.batch_upload_annotations(
             client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
         )
         
