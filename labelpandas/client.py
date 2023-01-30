@@ -117,7 +117,7 @@ class Client():
         )
             
         # Create a dictionary where {key=project_id : value=annotation_upload_list}, if applicable
-        project_id_to_upload_dict = connector.create_annotation_upload_dict(
+        project_id_to_upload_dict, annotation_conversion_errors = connector.create_annotation_upload_dict(
             client=self.lb_client, table=table, row_data_col=row_data_col, global_key_col=global_key_col, 
             project_id_col=project_id_col, annotation_index=annotation_index
         )
