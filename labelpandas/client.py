@@ -28,7 +28,7 @@ class Client():
 
     def create_data_rows_from_table(
         self, table:pd.core.frame.DataFrame, lb_dataset:labelboxDataset, row_data_col:str, global_key_col=None, external_id_col=None,
-        project_id_col:str="", metadata_index:dict={}, attachment_index:dict={}, annotation_index:dict={}, upload_method:str="",
+        project_id_col:str="", priority=5, metadata_index:dict={}, attachment_index:dict={}, annotation_index:dict={}, upload_method:str="",
         local_files:bool=False, skip_duplicates:bool=False, verbose:bool=False, divider="___"):
         """ Creates Labelbox data rows given a Pandas table and a Labelbox Dataset
         Args:
@@ -124,8 +124,7 @@ class Client():
         
         # Upload your annotations to Labelbox, if applicable
         annotation_upload_results = batch_upload_annotations(
-            client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, 
-            import_method=import_method, how=upload_method, verbose=verbose
+            client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
         )
         
         return {
