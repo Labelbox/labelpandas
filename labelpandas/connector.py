@@ -5,7 +5,34 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm.autonotebook import tqdm
 import math
 
-def create_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, row_data_col:str, 
+def create_batches(table=pandas.core.frame.DataFrame, global_key_col:str, project_id_col:str, global_key_to_data_row_id:dict):
+    """ From a Pandas DataFrame, creates a dictionary where {key=project_id : value=list_of_data_row_ids}
+    Args:
+        table                       :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame        
+        global_key_col              :   Required (str) - Column name containing the data row global key - defaults to row data
+        project_id_col              :   Required (str) - Column name containing the project ID to batch a given row to
+        global_key_to_data_row_id   :   Required (dict) - Dictionary where {key=global_key : value=data_row_id}
+    Returns:
+        Dictionary where {key=project_id : value=list_of_data_row_ids}
+    """
+    project_id_to_batch_dict = {}
+    if not project_id_col:
+        raise ValueError(f"No project_id_col provided - please provide a column indicating what project to batch data rows to")
+    column_names = get_columns_function(table)
+    if project_id_col not in column_names:
+        raise ValueError(f"Provided value for project_id_col `{project_id_col}` not in provided table column names")
+    for index, row in table.iterrows():
+        project_id = row[project_id_col]
+        data_row_id = global_key_to_data_row_id[row[global_key_col]]
+        if project_id not in project_id_to_batch_dict.keys():
+            project_id_to_batch_dict[project_id] = []
+        project_id_to_batch_dict[project_id].append(data_row_id)
+    return project_id_to_batch_dict
+  
+def create_annotation_upload_dict():
+    return global_key_to_upload_dict, errors
+
+def create_data_row_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, row_data_col:str, 
                        global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, 
                        divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
