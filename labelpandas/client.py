@@ -125,7 +125,7 @@ class Client():
         # Upload your annotations to Labelbox, if applicable
         annotation_upload_results = batch_upload_annotations(
             client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, 
-            import_method=import_method, verbose=verbose
+            import_method=import_method, how=upload_method, verbose=verbose
         )
         
         return {
