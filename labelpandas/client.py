@@ -82,7 +82,10 @@ class Client():
         
         # If df returns False, the sync failed - terminate the upload
         if type(table) == bool:
-            return {"upload_results" : [], "conversion_errors" : []}
+            return {
+                "data_row_upload_results" : [], "data_row_conversion_errors" : [], 
+                "batch_to_project_errors" : [], "annotation_upload_results" : [], "annotation_conversion_errors" : []
+            }
         
         # Create a dictionary where {key=global_key : value=data_row_upload_dict} - this is unique to Pandas
         global_key_to_upload_dict, data_row_conversion_errors = connector.create_data_row_upload_dict(
