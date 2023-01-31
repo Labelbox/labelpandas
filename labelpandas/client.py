@@ -86,9 +86,9 @@ class Client():
         
         # Create a dictionary where {key=global_key : value=data_row_upload_dict} - this is unique to Pandas
         global_key_to_upload_dict, data_row_conversion_errors = connector.create_data_row_upload_dict(
-            lb_client=self.lb_client, table=table,
-            row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
-            metadata_index=metadata_index, local_files=local_files, divider=divider, verbose=verbose
+            client=self.lb_client, table=table, row_data_col=row_data_col,
+            global_key_col=global_key_col, external_id_col=external_id_col, metadata_index=metadata_index,
+            attachment_index=attachment_index, local_files=local_files, divider=divider, verbose=verbose
         )
         
         # If there are conversion errors, let the user know; if there are no successful conversions, terminate the upload
@@ -115,20 +115,21 @@ class Client():
         )
         
         # Create a dictionary where {key=project_id : value=list_of_data_row_ids}, if applicable
-        project_id_to_batch_dict = connector.create_batches(
+        project_id_to_batch_dict, batch_to_project_errors = connector.create_batches(
             client=self.lb_client, table=table, global_key_col=global_key_col, 
             project_id_col=project_id_col, global_key_to_data_row_id=global_key_to_data_row_id
         )
         
         # Batch data rows to projects, if applicable
-        batch_results = uploader.batch_rows_to_project(
-            client=self.lb_client, project_id_to_batch_dict, priority=priority
-        )
+        if not batch_to_project_errors:
+            batch_to_project_errors = uploader.batch_rows_to_project(
+                client=self.lb_client, project_id_to_batch_dict, priority=priority
+            )
             
         # Create a dictionary where {key=project_id : value=annotation_upload_list}, if applicable
         project_id_to_upload_dict, annotation_conversion_errors = connector.create_annotation_upload_dict(
             client=self.lb_client, table=table, row_data_col=row_data_col, global_key_col=global_key_col, 
-            project_id_col=project_id_col, annotation_index=annotation_index
+            project_id_col=project_id_col, annotation_index=annotation_index, divider=divider, verbose=verbose
         )
         
         # Upload your annotations to Labelbox, if applicable
@@ -138,7 +139,8 @@ class Client():
         
         return {
             "data_row_upload_results" : data_row_upload_results, 
-            "data_row_conversion_errors" : data_row_conversion_errors, 
+            "data_row_conversion_errors" : data_row_conversion_errors,
+            "batch_to_project_errors" : batch_to_project_errors
             "annotation_upload_results" : annotation_upload_results,
             "annotation_conversion_errors" : annotation_conversion_errors
         }
