@@ -98,7 +98,10 @@ class Client():
                 print(f'Data row upload will continue')
             else:
                 print(f'Data row upload will not continue')  
-                return {"upload_results" : [], "conversion_errors" : errors}
+                    return {
+                        "data_row_upload_results" : [], "data_row_conversion_errors" : data_row_conversion_errors, 
+                        "batch_to_project_errors" : [], "annotation_upload_results" : [], "annotation_conversion_errors" : []
+                    }
                 
         # Upload your data rows to Labelbox
         data_row_upload_results = uploader.batch_create_data_rows(
