@@ -146,7 +146,7 @@ class Client():
         return {
             "data_row_upload_results" : data_row_upload_results, 
             "data_row_conversion_errors" : data_row_conversion_errors,
-            "batch_to_project_errors" : batch_to_project_errors
+            "batch_to_project_errors" : batch_to_project_errors,
             "annotation_upload_results" : annotation_upload_results,
             "annotation_conversion_errors" : annotation_conversion_errors
         }
