@@ -1,5 +1,5 @@
 from labelbase.metadata import get_metadata_schema_to_name_key, process_metadata_value
-from labelbox import Client
+from labelbox import labelboxClient
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm.autonotebook import tqdm
@@ -29,16 +29,16 @@ def create_batches(table=pandas.core.frame.DataFrame, global_key_col:str, projec
         project_id_to_batch_dict[project_id].append(data_row_id)
     return project_id_to_batch_dict
   
-def create_annotation_upload_dict():
+def create_annotation_upload_dict(client:labelboxClient, table:pandas.core.frame.DataFrame, ):
     return global_key_to_upload_dict, errors
 
-def create_data_row_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Client, row_data_col:str, 
-                       global_key_col:str="", external_id_col:str="", metadata_index:dict={}, local_files:bool=False, 
-                       divider:str="///", verbose=False):
+def create_data_row_upload_dict(client:labelboxClient, table:pandas.core.frame.DataFrame, row_data_col:str, 
+                                global_key_col:str="", external_id_col:str="", metadata_index:dict={}, attachment_index:dict=attachment_index
+                                local_files:bool=False, divider:str="///", verbose=False):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
-        lb_client       :   Required (labelbox.client.Client) - Labelbox Client object
+        client          :   Required (labelbox.client.Client) - Labelbox Client object
         row_data_col    :   Required (str) - Column containing asset URL or file path
         global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row data
         external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global key
@@ -70,14 +70,14 @@ def create_data_row_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Cli
             print(f'Submitting data rows...')
             for index, row in tqdm(table.iterrows()):
                 futures.append(exc.submit(
-                    create_data_rows, lb_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
-                    row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
+                    create_data_rows, client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    row_data_col, global_key_col, external_id_col, metadata_index, attachment_index, local_files, divider
                 ))           
         else:
             for index, row in table.iterrows():
                 futures.append(exc.submit(
-                    create_data_rows, lb_client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
-                    row_data_col, global_key_col, external_id_col, metadata_index, local_files, divider
+                    create_data_rows, client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    row_data_col, global_key_col, external_id_col, metadata_index, attachment_index, local_files, divider
                 ))
         if verbose:
             print(f'Processing data rows...')
@@ -98,12 +98,12 @@ def create_data_row_upload_dict(table:pandas.core.frame.DataFrame, lb_client:Cli
         print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
     return global_key_to_upload_dict, errors
   
-def create_data_rows(lb_client:Client, row:pandas.core.series.Series,
+def create_data_rows(client:labelboxClient, row:pandas.core.series.Series,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, row_data_col:str,
-                     global_key_col:str, external_id_col:str, metadata_index:dict, local_files:bool, divider:str):
+                     global_key_col:str, external_id_col:str, metadata_index:dict, attachment_index:dict, local_files:bool, divider:str):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
-        lb_client                   :   Required (labelbox.client.Client) - Labelbox Client object
+        client.                     :   Required (labelbox.client.Client) - Labelbox Client object
         row                         :   Required (pandas.core.series.Series) - Pandas Series object, corresponds to one row in a df.iterrow()
         metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
         metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
@@ -112,6 +112,8 @@ def create_data_rows(lb_client:Client, row:pandas.core.series.Series,
         external_id_col             :   Required (str) - Column name containing the data row external ID
         metadata_index              :   Required (dict) - Dictionary where {key=column_name : value=metadata_type}
                                             metadata_type must be either "enum", "string", "datetime" or "number"
+        attachment_index            :   Required (dict) - Dictionary where {key=column_name : value=attachment_type}
+                                            attachment_type must be one of "IMAGE", "VIDEO", "RAW_TEXT", "HTML", "TEXT_URL"                                            
         local_files                 :   Required (bool) - Determines how to handle row_data_col values
                                             If True, treats row_data_col values as file paths uploads the local files to Labelbox
                                             If False, treats row_data_col values as urls (assuming delegated access is set up)
@@ -123,21 +125,25 @@ def create_data_rows(lb_client:Client, row:pandas.core.series.Series,
     """
     return_value = {"error" : None, "data_row" : {}}
     try:
-        return_value["data_row"]["row_data"] = lb_client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
+        return_value["data_row"]["row_data"] = client.upload_file(str(row[row_data_col])) if local_files else str(row[row_data_col])
         return_value["data_row"]["global_key"] = str(row[global_key_col])
         return_value["data_row"]["external_id"] = str(row[external_id_col])
         metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
         if metadata_index:
             for metadata_field_name in metadata_index.keys():
                 input_metadata = process_metadata_value(
-                    client=lb_client, metadata_value=row[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
+                    client=client, metadata_value=row[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
                     parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
                 )
                 if input_metadata:
                     metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
                 else:
                     continue
-        return_value["data_row"]["metadata_fields"] = metadata_fields
+        return_value["data_row"]["metadata_fields"] = metadata_fields                    
+        if attachment_index:
+            return_value['data_row']['attachments'] = []
+            for column_name in attachment_index:
+                return_value['data_row']['attachments'].append({"type" : attachment_index[column_name], "value" : row[column_name]})
     except Exception as e:
         return_value["error"] = e
         return_value["data_row"]["global_key"] = str(row[global_key_col])
