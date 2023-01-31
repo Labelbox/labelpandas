@@ -1,4 +1,5 @@
 from labelbase.metadata import get_metadata_schema_to_name_key, process_metadata_value
+from labelbase.ontology import get_ontology_schema_to_name_path
 from labelbox import labelboxClient
 import pandas
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -16,21 +17,61 @@ def create_batches(table=pandas.core.frame.DataFrame, global_key_col:str, projec
         Dictionary where {key=project_id : value=list_of_data_row_ids}
     """
     project_id_to_batch_dict = {}
+    errors = []
     if not project_id_col:
-        raise ValueError(f"No project_id_col provided - please provide a column indicating what project to batch data rows to")
-    column_names = get_columns_function(table)
-    if project_id_col not in column_names:
-        raise ValueError(f"Provided value for project_id_col `{project_id_col}` not in provided table column names")
-    for index, row in table.iterrows():
-        project_id = row[project_id_col]
-        data_row_id = global_key_to_data_row_id[row[global_key_col]]
-        if project_id not in project_id_to_batch_dict.keys():
-            project_id_to_batch_dict[project_id] = []
-        project_id_to_batch_dict[project_id].append(data_row_id)
-    return project_id_to_batch_dict
+        errors = f"No project_id_col provided - please provide a column indicating what project to batch data rows to"
+    else:
+        try:
+            column_names = get_columns_function(table)
+            if project_id_col not in column_names:
+                raise ValueError(f"Provided value for project_id_col `{project_id_col}` not in provided table column names")
+            for index, row in table.iterrows():
+                project_id = row[project_id_col]
+                data_row_id = global_key_to_data_row_id[row[global_key_col]]
+                if project_id not in project_id_to_batch_dict.keys():
+                    project_id_to_batch_dict[project_id] = []
+                project_id_to_batch_dict[project_id].append(data_row_id)
+        except Exception as e:
+            errors = e
+    return project_id_to_batch_dict, errors
   
-def create_annotation_upload_dict(client:labelboxClient, table:pandas.core.frame.DataFrame, ):
-    return global_key_to_upload_dict, errors
+def create_annotation_upload_dict(client:labelboxClient, table:pandas.core.frame.DataFrame, row_data_col:str, global_key_col:str,
+                                  project_id_col:str, annotation_index:dict, divider:str="///", verbose:bool=False):
+    if not annotation_index:
+        project_id_to_upload_dict = {}        
+        errors = f"No annotation index provided - no annotations uploaded"
+    else:
+        try:
+            project_id_to_upload_dict = {project_id : [] for project_id in get_unique_values_function(table, project_id_col)}
+            for project_id in project_id_to_upload_dict:
+                project_id_to_upload_dict[project_id] = []
+                project_id_to_ontology_index[project_id] = get_ontology_schema_to_name_path(
+                    ontology=client.get_project(project_id).ontology(), divider=divider, invert=True
+                )
+            if verbose:
+                for index, row in tqdm(table.iterrows()):
+                    for column_name in annotation_index.keys():
+                        ndjsons = create_ndjsons(
+                            annotation_values=row[column_name], 
+                            annotation_type=annotation_index[column_name],
+                            ontology_index=project_id_to_ontology_index[row[project_id_col]],
+                            divide=divider
+                        )
+                        for ndjson in ndjsons:
+                            project_id_to_upload_dict[row[project_id_col]].append(ndjson)    
+                for index, row in table.iterrows():
+                    for column_name in annotation_index.keys():
+                        ndjsons = create_ndjsons(
+                            annotation_values=row[column_name], 
+                            annotation_type=annotation_index[column_name],
+                            ontology_index=project_id_to_ontology_index[row[project_id_col]],
+                            divide=divider
+                        )
+                        for ndjson in ndjsons:
+                            project_id_to_upload_dict[row[project_id_col]].append(ndjson)                              
+        except Exception as e:
+            errors = e
+    return project_id_to_upload_dict, errors
 
 def create_data_row_upload_dict(client:labelboxClient, table:pandas.core.frame.DataFrame, row_data_col:str, 
                                 global_key_col:str="", external_id_col:str="", metadata_index:dict={}, attachment_index:dict=attachment_index
