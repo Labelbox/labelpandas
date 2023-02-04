@@ -1,3 +1,24 @@
+""" 
+data_rows.py holds the function create_data_row_upload_dict() -- which multithreads over create_data_rows() to create the following style dictionary:
+
+{
+    dataset_id : 
+        {
+            global_key : data_row_upload_dict,
+            global_key : data_row_upload_dict,
+            global_key : data_row_upload_dict
+        },
+    dataset_id : 
+        {
+            global_key : data_row_upload_dict,
+            global_key : data_row_upload_dict,
+            global_key : data_row_upload_dict
+        }                
+}
+
+This is the format that labelbase.uploaders.batch_create_data_rows() expects
+
+"""
 import pandas
 from labelbox import Client as labelboxClient
 import labelbase
