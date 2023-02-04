@@ -1,18 +1,19 @@
-import pandas as pd
+import pandas
 from labelbox import Client as labelboxClient
 import labelbase
 from labelpandas import connector
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def create_data_row_upload_dict(client:labelboxClient, table:dict, 
+def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame,table_dict:dict, 
                                 row_data_col:str, global_key_col:str, external_id_col:str, dataset_id_col:str,
                                 dataset_id:str, metadata_index:dict, attachment_index:dict,
                                 divider:str, verbose:bool, extra_client:bool=None):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         client                      :   Required (labelbox.client.Client) - Labelbox Client object        
-        table                       :   Required (dict) - Pandas DataFrame as dict with df.to_dict("records")
+        table                       :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame                
+        table_dict                  :   Required (dict) - Pandas DataFrame as dict with df.to_dict("records")
         row_data_col                :   Required (str) - Column containing asset URL or raw text
         global_key_col              :   Required (str) - Column name containing the data row global key - defaults to row data
         external_id_col             :   Required (str) - Column name containing the data row external ID - defaults to global key
@@ -28,10 +29,10 @@ def create_data_row_upload_dict(client:labelboxClient, table:dict,
         - global_key_to_upload_dict - Dictionary where {key=global_key : value=data row dictionary in upload format}
         - errors - List of dictionaries containing conversion error information; see connector.create_data_rows() for more information
     """
-    table_length = len(df_dict)
+    table_length = connector.get_table_length_function(table=table)
     if verbose:
         print(f'Creating upload list - {table_length} rows in Pandas DataFrame')
-    unique_global_key_count = len(list(set([str(row_dict[global_key_col]) for row_dict in df_dict])))
+    unique_global_key_count = len(connector.get_unique_values_function(table=table, column_name=global_key_col))
     if table_length != unique_global_key_count:
         print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row per unique global key")     
     metadata_schema_to_name_key = labelbase.metadata.get_metadata_schema_to_name_key(client=client, lb_mdo=False, divider=divider, invert=False)
@@ -39,7 +40,7 @@ def create_data_row_upload_dict(client:labelboxClient, table:dict,
     if dataset_id:
         dataset_to_global_key_to_upload_dict = {dataset_id : {}}
     else:
-        dataset_to_global_key_to_upload_dict = {id : {} for id in list(set([str(row_dict[dataset_id_col]))) for row_dict in df_dict])))}    
+        dataset_to_global_key_to_upload_dict = {id : {} for id in connector.get_unique_values_function(table=table, column_name=dataset_id_col)}
     with ThreadPoolExecutor(max_workers=8) as exc:
         errors = []
         futures = []
