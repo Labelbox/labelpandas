@@ -5,13 +5,12 @@ from labelpandas import connector
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def create_data_row_upload_dict(client:labelboxClient, table:dict, 
+def create_data_row_upload_dict(table:dict, 
                                 row_data_col:str, global_key_col:str, external_id_col:str, dataset_id_col:str,
                                 dataset_id:str, metadata_index:dict, attachment_index:dict,
                                 divider:str, verbose:bool, extra_client:bool=None):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
-        client                      :   Required (labelbox.client.Client) - Labelbox Client object    
         table                       :   Required (dict) - Pandas DataFrame as dict with df.to_dict("records")
         row_data_col                :   Required (str) - Column containing asset URL or raw text
         global_key_col              :   Required (str) - Column name containing the data row global key - defaults to row data
@@ -47,7 +46,7 @@ def create_data_row_upload_dict(client:labelboxClient, table:dict,
             print(f'Submitting data rows...')
             for index, row_dict in tqdm(df_dict):
                 futures.append(exc.submit(
-                    create_data_rows, client, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    create_data_rows, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, dataset_id_col, 
                     dataset_id, metadata_index, attachment_index, divider
                 ))           
@@ -64,7 +63,7 @@ def create_data_row_upload_dict(client:labelboxClient, table:dict,
         else:
             for index, row in table.iterrows():
                 futures.append(exc.submit(
-                    create_data_rows, client, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    create_data_rows, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, dataset_id_col, 
                     dataset_id, metadata_index, attachment_index, divider
                 ))
@@ -81,14 +80,13 @@ def create_data_row_upload_dict(client:labelboxClient, table:dict,
         print(f'Generated upload list')
     return global_key_to_upload_dict, errors
   
-def create_data_rows(client:labelboxClient, row_dict:dict,
+def create_data_rows(row_dict:dict,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, 
                      row_data_col:str, global_key_col:str, external_id_col:str, dataset_id_col:str,
                      metadata_index:str, metadata_index:dict, attachment_index:dict, 
                      divider:str):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
-        client                      :   Required (labelbox.client.Client) - Labelbox Client object
         row_dict                    :   Required (dict) - Dictionary where {key=column_name : value=row_value}
         metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
         metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
