@@ -2,7 +2,7 @@ import pandas
 from labelbox import Client as labelboxClient
 import labelbase
 from labelpandas import connector
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame,table_dict:dict, 
