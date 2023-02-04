@@ -35,7 +35,7 @@ def create_annotation_upload_dict(client:labelboxClient, table:pandas.core.frame
         global_key_col              :   Required (str) - Column name containing the data row global key - defaults to row data
         project_id_col              :   Required (str) - Column name containing the project ID to batch a given row to
         project_id                  :   Required (str) - Labelbox project ID to add data rows to - only necessary if no "project_id" column exists
-        annotation_index            :   Required (dict) - Dictonary where {key=column_name : value=annotation_type}
+        annotation_index            :   Required (dict) - Dictonary where {key=column_name : value=top_level_feature_name}
         global_key_to_data_row_id   :   Required (dict) - Dictionary where {key=global_key : value=data_row_id}
     Returns:
         
