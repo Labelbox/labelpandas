@@ -43,15 +43,15 @@ class Client():
             divider             :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys
         """
         # Create a metadata_index, attachment_index, and annotation_index
-        # row_data_col : column with name "row_data"
-        # global_key_col : column with name "global_key" - defaults to row_data_col
-        # external_id_col : column with name "external_id" - defaults to global_key_col
-        # project_id_col : column with name "project_id" - defaults to "" (requires project_id input argument if no "project_id" column exists)
-        # dataset_id_col : column with name "dataset_id" - defaults to "" (requires project_id input argument if no "dataset_id" column exists)        
-        # external_id_col : column with name "external_id" - defaults to global_key_col        
-        # metadata_index : Dictonary where {key=column_name : value=metadata_type}
-        # attachment_index : Dictonary where {key=column_name : value=attachment_type}
-        # annotation_index : Dictonary where {key=column_name : value=annotation_type}
+        # row_data_col      : column with name "row_data"
+        # global_key_col    : column with name "global_key" - defaults to row_data_col
+        # external_id_col   : column with name "external_id" - defaults to global_key_col
+        # project_id_col    : column with name "project_id" - defaults to "" (requires project_id input argument if no "project_id" column exists)
+        # dataset_id_col    : column with name "dataset_id" - defaults to "" (requires project_id input argument if no "dataset_id" column exists)        
+        # external_id_col   : column with name "external_id" - defaults to global_key_col        
+        # metadata_index    : Dictonary where {key=column_name : value=metadata_type}
+        # attachment_index  : Dictonary where {key=column_name : value=attachment_type}
+        # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name}
         row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = labelbase.connector.validate_columns(
             table=table,
             get_columns_function=connector.get_columns_function,
