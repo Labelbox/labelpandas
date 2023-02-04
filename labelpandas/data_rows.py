@@ -40,7 +40,6 @@ def create_data_row_upload_dict(client:labelboxClient, table:dict,
         dataset_to_global_key_to_upload_dict = {dataset_id : {}}
     else:
         dataset_to_global_key_to_upload_dict = {id : {} for id in len(list(set([str(row_dict[dataset_id_col]) for row_dict in df_dict])))}    
-    df_dict = df.to_dict('records')
     with ThreadPoolExecutor(max_workers=8) as exc:
         errors = []
         futures = []
