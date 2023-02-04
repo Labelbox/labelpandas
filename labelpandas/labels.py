@@ -1,3 +1,22 @@
+""" 
+labels.py holds the function create_annotation_upload_dict() -- which creates the following style dictionary:
+{
+    project_id : 
+        [
+            annotation_ndjson,
+            annotation_ndjson,
+            annotation_ndjson,            
+        ],
+    project_id : 
+        [
+            annotation_ndjson,
+            annotation_ndjson,
+            annotation_ndjson,            
+        ],              
+}
+This is the format that labelbase.uploader.batch_upload_annotations() expects
+"""
+
 import pandas
 from labelbox import Client as labelboxClient
 
