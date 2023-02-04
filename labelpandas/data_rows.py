@@ -38,26 +38,18 @@ def create_data_row_upload_dict(client:labelboxClient, table:pd.core.frame.DataF
         dataset_to_global_key_to_upload_dict = {dataset_id : {}}
     else:
         dataset_to_global_key_to_upload_dict = {id : {} for id in connector.get_unique_values_function(table=table)}    
+    df_dict = df.to_dict('records')
     with ThreadPoolExecutor(max_workers=8) as exc:
-        global_key_to_upload_dict = {}
         errors = []
         futures = []
         if verbose:
             print(f'Submitting data rows...')
-            for index, row in tqdm(table.iterrows()):
+            for index, row_dict in tqdm(df_dict):
                 futures.append(exc.submit(
-                    create_data_rows, client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    create_data_rows, client, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, dataset_id_col, 
                     dataset_id, metadata_index, attachment_index, divider
                 ))           
-        else:
-            for index, row in table.iterrows():
-                futures.append(exc.submit(
-                    create_data_rows, client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
-                    row_data_col, global_key_col, external_id_col, dataset_id_col, 
-                    dataset_id, metadata_index, attachment_index, divider
-                ))
-        if verbose:
             print(f'Processing data rows...')
             for f in tqdm(as_completed(futures)):
                 res = f.result()
@@ -67,8 +59,14 @@ def create_data_row_upload_dict(client:labelboxClient, table:pd.core.frame.DataF
                     id = str(list(res.keys()))[0]
                     data_row_dict = res["res"][id]
                     global_key = str(data_row_dict["global_key"])
-                    dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})
+                    dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})                
         else:
+            for index, row in table.iterrows():
+                futures.append(exc.submit(
+                    create_data_rows, client, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    row_data_col, global_key_col, external_id_col, dataset_id_col, 
+                    dataset_id, metadata_index, attachment_index, divider
+                ))
             for f in as_completed(futures):
                 res = f.result()
                 if res['error']:
@@ -82,7 +80,7 @@ def create_data_row_upload_dict(client:labelboxClient, table:pd.core.frame.DataF
         print(f'Generated upload list')
     return global_key_to_upload_dict, errors
   
-def create_data_rows(client:labelboxClient, row:pandas.core.series.Series,
+def create_data_rows(client:labelboxClient, row_dict:dict,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, 
                      row_data_col:str, global_key_col:str, external_id_col:str, dataset_id_col:str,
                      metadata_index:str, metadata_index:dict, attachment_index:dict, 
@@ -90,7 +88,7 @@ def create_data_rows(client:labelboxClient, row:pandas.core.series.Series,
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
         client                      :   Required (labelbox.client.Client) - Labelbox Client object
-        row                         :   Required (pandas.core.series.Series) - Pandas Series object, corresponds to one row in a df.iterrow()
+        row_dict                    :   Required (dict) - Dictionary where {key=column_name : value=row_value}
         metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
         metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
         row_data_col                :   Required (str) - Column containing asset URL or raw text
@@ -108,16 +106,16 @@ def create_data_rows(client:labelboxClient, row:pandas.core.series.Series,
     """
     return_value = {"error" : None, "res" : {}}
     try:
-        id = dataset_id if dataset_id else row["dataset_id_col"]
+        id = dataset_id if dataset_id else row_dict["dataset_id_col"]
         return_value["res"] = {id : {}}
-        return_value["res"][id]["row_data"] = str(row[row_data_col])
-        return_value["res"][id]["global_key"] = str(row[global_key_col])
-        return_value["res"][id]["external_id"] = str(row[external_id_col])
+        return_value["res"][id]["row_data"] = str(row_dict[row_data_col])
+        return_value["res"][id]["global_key"] = str(row_dict[global_key_col])
+        return_value["res"][id]["external_id"] = str(row_dict[external_id_col])
         metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
         if metadata_index:
             for metadata_field_name in metadata_index.keys():
                 input_metadata = labelbase.metadata.process_metadata_value(
-                    client=client, metadata_value=row[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
+                    client=client, metadata_value=row_dict[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
                     parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
                 )
                 if input_metadata:
@@ -128,7 +126,7 @@ def create_data_rows(client:labelboxClient, row:pandas.core.series.Series,
         if attachment_index:
             return_value["res"][id]["attachments"] = []
             for column_name in attachment_index:
-                return_value["res"][id]['attachments'].append({"type" : attachment_index[column_name], "value" : row[column_name]})
+                return_value["res"][id]['attachments'].append({"type" : attachment_index[column_name], "value" : row_dict[column_name]})
     except Exception as e:
         return_value["error"] = e
     return return_value  
