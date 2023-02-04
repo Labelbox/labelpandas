@@ -17,7 +17,7 @@ def create_data_row_upload_dict(client:labelboxClient, table:pd.core.frame.DataF
         global_key_col              :   Required (str) - Column name containing the data row global key - defaults to row data
         external_id_col             :   Required (str) - Column name containing the data row external ID - defaults to global key
         dataset_id_col              :   Required (str) - Column name containing the dataset ID to add data rows to
-        dataset_id                  :   Required (str) - Default dataset if dataset_id == ""
+        dataset_id                  :   Required (str) - Labelbox dataset ID to add data rows to - only necessary if no "dataset_id" column exists            
         metadata_index              :   Required (dict) - Dictonary where {key=column_name : value=metadata_type}
         attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}
         divider                     :   Required (str) - String delimiter for all name keys generated
