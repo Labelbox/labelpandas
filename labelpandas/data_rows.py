@@ -13,12 +13,12 @@ def create_data_row_upload_dict(client:labelboxClient, table:pd.core.frame.DataF
     Args:
         table                       :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
         client                      :   Required (labelbox.client.Client) - Labelbox Client object
-        row_data_col                :   Required (str) - Column containing asset URL or file path
+        row_data_col                :   Required (str) - Column containing asset URL or raw text
         global_key_col              :   Required (str) - Column name containing the data row global key - defaults to row data
         external_id_col             :   Required (str) - Column name containing the data row external ID - defaults to global key
         metadata_index              :   Required (dict) - Dictonary where {key=column_name : value=metadata_type}
         attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}
-        divider                     :   Required (str) - String delimiter for all name keys generated for parent/child schemas
+        divider                     :   Required (str) - String delimiter for all name keys generated
         verbose                     :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
     Returns:
         Two values:
@@ -79,12 +79,12 @@ def create_data_rows(client:labelboxClient, row:pandas.core.series.Series,
         row                         :   Required (pandas.core.series.Series) - Pandas Series object, corresponds to one row in a df.iterrow()
         metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
         metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
-        row_data_col                :   Required (str) - Column containing asset URL or file path        
+        row_data_col                :   Required (str) - Column containing asset URL or raw text
         global_key_col              :   Required (str) - Column name containing the data row global key
         external_id_col             :   Required (str) - Column name containing the data row external ID
         metadata_index              :   Required (dict) - Dictonary where {key=column_name : value=metadata_type}
         attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}                                       
-        divider                     :   Required (str) - String delimiter for all name keys generated for parent/child schemas
+        divider                     :   Required (str) - String delimiter for all name keys generated
     Returns:
         A dictionary with "error" and "data_row" keys:
         - "error" - If there's value in the "error" key, the script will scip it on upload and return the error at the end
