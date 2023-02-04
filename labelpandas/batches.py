@@ -12,7 +12,7 @@ batches.py holds the function create_batches_dict() -- which creates the followi
             data_row_id,
             data_row_id,
             data_row_id,            
-        ],              
+        ]
 }
 This is the format that labelbase.uploader.batch_rows_to_project() expects
 """
