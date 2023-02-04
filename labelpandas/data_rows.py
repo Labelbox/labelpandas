@@ -66,7 +66,7 @@ def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.
         futures = []
         if verbose:
             print(f'Submitting data rows...')
-            for index, row_dict in tqdm(df_dict):
+            for row_dict in tqdm(df_dict):
                 futures.append(exc.submit(
                     create_data_rows, client, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, dataset_id_col, 
@@ -75,15 +75,12 @@ def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.
             print(f'Processing data rows...')
             for f in tqdm(as_completed(futures)):
                 res = f.result()
-                if res['error']:
-                    errors.append(res)
-                else:
-                    id = str(list(res.keys()))[0]
-                    data_row_dict = res["res"][id]
-                    global_key = str(data_row_dict["global_key"])
-                    dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})                
+                id = str(list(res.keys()))[0]
+                data_row_dict = res[id]
+                global_key = str(data_row_dict["global_key"])
+                dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})                
         else:
-            for index, row in table.iterrows():
+            for row_dict in tqdm(df_dict):
                 futures.append(exc.submit(
                     create_data_rows, client, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, dataset_id_col, 
@@ -91,16 +88,13 @@ def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.
                 ))
             for f in as_completed(futures):
                 res = f.result()
-                if res['error']:
-                    errors.append(res)
-                else:
-                    id = str(list(res.keys()))[0]
-                    data_row_dict = res["res"][id]
-                    global_key = str(data_row_dict["global_key"])
-                    dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})
+                id = str(list(res.keys()))[0]
+                data_row_dict = res[id]
+                global_key = str(data_row_dict["global_key"])
+                dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})
     if verbose:
         print(f'Generated upload list')
-    return global_key_to_upload_dict, errors
+    return global_key_to_upload_dict
   
 def create_data_rows(client:labelboxClient, row_dict:dict,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, 
@@ -126,29 +120,25 @@ def create_data_rows(client:labelboxClient, row_dict:dict,
         - "error" - If there's value in the "error" key, the script will scip it on upload and return the error at the end
         - "data_row" - Dictionary with "global_key" "external_id" "row_data" and "metadata_fields" keys in the proper format to-be-uploaded
     """
-    return_value = {"error" : None, "res" : {}}
-    try:
-        id = dataset_id if dataset_id else row_dict["dataset_id_col"]
-        return_value["res"] = {id : {}}
-        return_value["res"][id]["row_data"] = str(row_dict[row_data_col])
-        return_value["res"][id]["global_key"] = str(row_dict[global_key_col])
-        return_value["res"][id]["external_id"] = str(row_dict[external_id_col])
-        metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
-        if metadata_index:
-            for metadata_field_name in metadata_index.keys():
-                input_metadata = labelbase.metadata.process_metadata_value(
-                    client=client, metadata_value=row_dict[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
-                    parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
-                )
-                if input_metadata:
-                    metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
-                else:
-                    continue
-        return_value["res"][id]["metadata_fields"] = metadata_fields                    
-        if attachment_index:
-            return_value["res"][id]["attachments"] = []
-            for column_name in attachment_index:
-                return_value["res"][id]['attachments'].append({"type" : attachment_index[column_name], "value" : row_dict[column_name]})
-    except Exception as e:
-        return_value["error"] = e
+    id = dataset_id if dataset_id else row_dict["dataset_id_col"]
+    return_value = {id : {}}
+    return_value[id]["row_data"] = str(row_dict[row_data_col])
+    return_value[id]["global_key"] = str(row_dict[global_key_col])
+    return_value[id]["external_id"] = str(row_dict[external_id_col])
+    metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
+    if metadata_index:
+        for metadata_field_name in metadata_index.keys():
+            input_metadata = labelbase.metadata.process_metadata_value(
+                client=client, metadata_value=row_dict[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
+                parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
+            )
+            if input_metadata:
+                metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
+            else:
+                continue
+    return_value[id]["metadata_fields"] = metadata_fields                    
+    if attachment_index:
+        return_value[id]["attachments"] = []
+        for column_name in attachment_index:
+            return_value[id]['attachments'].append({"type" : attachment_index[column_name], "value" : row_dict[column_name]})
     return return_value  
