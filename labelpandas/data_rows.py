@@ -26,7 +26,7 @@ from labelpandas import connector
 from tqdm.autonotebook import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame,table_dict:dict, 
+def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame, table_dict:dict, 
                                 row_data_col:str, global_key_col:str, external_id_col:str, dataset_id_col:str,
                                 dataset_id:str, metadata_index:dict, attachment_index:dict,
                                 divider:str, verbose:bool, extra_client:bool=None):
