@@ -1,0 +1,117 @@
+import pandas as pd
+from labelbox import Client as labelboxClient
+import labelbase
+from labelpandas import connector
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def create_data_row_upload_dict(client:labelboxClient, table:pd.core.frame.DataFrame, 
+                                row_data_col:str, global_key_col:str, external_id_col:str, 
+                                metadata_index:dict, attachment_index:dict,
+                                divider:str, verbose:bool):
+    """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
+    Args:
+        table                       :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
+        client                      :   Required (labelbox.client.Client) - Labelbox Client object
+        row_data_col                :   Required (str) - Column containing asset URL or file path
+        global_key_col              :   Required (str) - Column name containing the data row global key - defaults to row data
+        external_id_col             :   Required (str) - Column name containing the data row external ID - defaults to global key
+        metadata_index              :   Required (dict) - Dictonary where {key=column_name : value=metadata_type}
+        attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}
+        divider                     :   Required (str) - String delimiter for all name keys generated for parent/child schemas
+        verbose                     :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
+    Returns:
+        Two values:
+        - global_key_to_upload_dict - Dictionary where {key=global_key : value=data row dictionary in upload format}
+        - errors - List of dictionaries containing conversion error information; see connector.create_data_rows() for more information
+    """
+    table_length = connector.get_table_length_function(table=table)
+    if verbose:
+        print(f'Creating upload list - {table_length} rows in Pandas DataFrame')
+    if table_length != connector.get_unique_values_function(table=table, column_name=global_key_col):
+        print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row per unique global key")     
+    metadata_schema_to_name_key = labelbase.metadata.get_metadata_schema_to_name_key(client=lb_client, lb_mdo=False, divider=divider, invert=False)
+    metadata_name_key_to_schema = labelbase.metadata.get_metadata_schema_to_name_key(client=lb_client, lb_mdo=False, divider=divider, invert=True) 
+    with ThreadPoolExecutor(max_workers=8) as exc:
+        global_key_to_upload_dict = {}
+        errors = []
+        futures = []
+        if verbose:
+            print(f'Submitting data rows...')
+            for index, row in tqdm(table.iterrows()):
+                futures.append(exc.submit(
+                    create_data_rows, client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    row_data_col, global_key_col, external_id_col, metadata_index, attachment_index, divider
+                ))           
+        else:
+            for index, row in table.iterrows():
+                futures.append(exc.submit(
+                    create_data_rows, client, row, metadata_name_key_to_schema, metadata_schema_to_name_key, 
+                    row_data_col, global_key_col, external_id_col, metadata_index, attachment_index, divider
+                ))
+        if verbose:
+            print(f'Processing data rows...')
+            for f in tqdm(as_completed(futures)):
+                res = f.result()
+                if res['error']:
+                    errors.append(res)
+                else:
+                    global_key_to_upload_dict[str(res['data_row']["global_key"])] = res['data_row']  
+        else:
+            for f in as_completed(futures):
+                res = f.result()
+                if res['error']:
+                    errors.append(res)
+                else:
+                    global_key_to_upload_dict[str(res['data_row']["global_key"])] = res['data_row']
+    if verbose:
+        print(f'Generated upload list - {len(global_key_to_upload_dict)} data rows to upload')
+    return global_key_to_upload_dict, errors
+  
+def create_data_rows(client:labelboxClient, row:pandas.core.series.Series,
+                     metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, 
+                     row_data_col:str, global_key_col:str, external_id_col:str, 
+                     metadata_index:dict, attachment_index:dict, 
+                     divider:str):
+    """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
+    Args:
+        client                      :   Required (labelbox.client.Client) - Labelbox Client object
+        row                         :   Required (pandas.core.series.Series) - Pandas Series object, corresponds to one row in a df.iterrow()
+        metadata_name_key_to_schema :   Required (dict) - Dictionary where {key=metadata_field_name_key : value=metadata_schema_id}
+        metadata_schema_to_name_key :   Required (dict) - Inverse of metadata_name_key_to_schema        
+        row_data_col                :   Required (str) - Column containing asset URL or file path        
+        global_key_col              :   Required (str) - Column name containing the data row global key
+        external_id_col             :   Required (str) - Column name containing the data row external ID
+        metadata_index              :   Required (dict) - Dictonary where {key=column_name : value=metadata_type}
+        attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}                                       
+        divider                     :   Required (str) - String delimiter for all name keys generated for parent/child schemas
+    Returns:
+        A dictionary with "error" and "data_row" keys:
+        - "error" - If there's value in the "error" key, the script will scip it on upload and return the error at the end
+        - "data_row" - Dictionary with "global_key" "external_id" "row_data" and "metadata_fields" keys in the proper format to-be-uploaded
+    """
+    return_value = {"error" : None, "data_row" : {}}
+    try:
+        return_value["data_row"]["row_data"] = str(row[row_data_col])
+        return_value["data_row"]["global_key"] = str(row[global_key_col])
+        return_value["data_row"]["external_id"] = str(row[external_id_col])
+        metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
+        if metadata_index:
+            for metadata_field_name in metadata_index.keys():
+                input_metadata = labelbase.metadata.process_metadata_value(
+                    client=client, metadata_value=row[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
+                    parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
+                )
+                if input_metadata:
+                    metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
+                else:
+                    continue
+        return_value["data_row"]["metadata_fields"] = metadata_fields                    
+        if attachment_index:
+            return_value['data_row']['attachments'] = []
+            for column_name in attachment_index:
+                return_value['data_row']['attachments'].append({"type" : attachment_index[column_name], "value" : row[column_name]})
+    except Exception as e:
+        return_value["error"] = e
+        return_value["data_row"]["global_key"] = str(row[global_key_col])
+    return return_value  
