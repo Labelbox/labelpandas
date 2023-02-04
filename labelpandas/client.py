@@ -110,7 +110,8 @@ class Client():
                 project_id_to_upload_dict = connector.create_annotation_upload_dict(
                     client=self.lb_client, table=table, table_dict=table_dict,
                     row_data_col=row_data_col, global_key_col=global_key_col, project_id_col=project_id_col, 
-                    annotation_index=annotation_index, divider=divider, verbose=verbose
+                    project_id=project_id, annotation_index=annotation_index, global_key_to_data_row_id=global_key_to_data_row_id,
+                    divider=divider, verbose=verbose
                 )
 
                 # Upload your annotations to Labelbox, if applicable
@@ -118,14 +119,13 @@ class Client():
                     client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
                 )
                 
-            else:
+            else: # If no proper upload_method is provided or annotation_index is generated, we don't upload annotations
                 annotation_upload_results = []
-                                 
-        
-        else:
+
+        else: # If project ids are not provided, we don't batch data rows to projects or upload annotations
             batch_to_project_results = []
             annotation_upload_results = []
-        
+            
         return {
             "data_row_upload_results" : data_row_upload_results, 
             "batch_to_project_results" : batch_to_project_results,
