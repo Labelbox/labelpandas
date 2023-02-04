@@ -1,4 +1,13 @@
-import pandas
+"""
+connector.py holds the following helper functions specific to pandas DataFrames:
+
+- get_columns_function(table)                             : Gets all column names
+- get_unique_values_function(table, column_name)          : Gets all unique values in a given column
+- add_column_function(table, column_name, default_value)  : Creates a column where all values equal the default value
+- get_table_length_function(table)                        : Gets the length of a DataFrame
+
+"""
+import pandas   
   
 def get_columns_function(table:pandas.core.frame.DataFrame, extra_client=None):
     """Grabs all column names from a Pandas DataFrame
