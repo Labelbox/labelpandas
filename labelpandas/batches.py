@@ -16,7 +16,6 @@ batches.py holds the function create_batches_dict() -- which creates the followi
 }
 This is the format that labelbase.uploader.batch_rows_to_project() expects
 """
-
 import pandas as pd
 
 def create_batches_dict(table: pandas.core.frame.DataFrame, table_dict:dict, 
