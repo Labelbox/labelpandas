@@ -49,7 +49,7 @@ class Client():
         # metadata_index : Dictonary where {key=column_name : value=metadata_type}
         # attachment_index : Dictonary where {key=column_name : value=attachment_type}
         # annotation_index : Dictonary where {key=column_name : value=annotation_type}
-        row_data_col, global_key_col, external_id_col, metadata_index, attachment_index, annotation_index = labelbase.validate_columns(
+        row_data_col, global_key_col, external_id_col, metadata_index, attachment_index, annotation_index = labelbase.connector.validate_columns(
             table=table,
             get_columns_function=connector.get_columns_function,
             get_unique_values_function=connector.get_unique_values_function,
@@ -79,7 +79,7 @@ class Client():
                     }
                 
         # Upload your data rows to Labelbox
-        data_row_upload_results = uploader.batch_create_data_rows(
+        data_row_upload_results = labelbase.uploader.batch_create_data_rows(
             client=self.lb_client, dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
