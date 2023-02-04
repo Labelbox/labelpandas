@@ -17,7 +17,6 @@ data_rows.py holds the function create_data_row_upload_dict() -- which multithre
 }
 
 This is the format that labelbase.uploader.batch_create_data_rows() expects
-
 """
 import pandas
 from labelbox import Client as labelboxClient
