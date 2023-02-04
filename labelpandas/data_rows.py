@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 def create_data_row_upload_dict(client:labelboxClient, table:pd.core.frame.DataFrame, 
                                 row_data_col:str, global_key_col:str, external_id_col:str, dataset_id_col:str,
                                 dataset_id:str, metadata_index:dict, attachment_index:dict,
-                                divider:str, verbose:bool):
+                                divider:str, verbose:bool, extra_client:bool=None):
     """ Multithreads over a Pandas DataFrame, calling create_data_rows() on each row to return an upload dictionary
     Args:
         client                      :   Required (labelbox.client.Client) - Labelbox Client object    
@@ -22,15 +22,16 @@ def create_data_row_upload_dict(client:labelboxClient, table:pd.core.frame.DataF
         attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}
         divider                     :   Required (str) - String delimiter for all name keys generated
         verbose                     :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
+        extra_client                :   Ignore this value - necessary for other labelbase integrations                
     Returns:
         Two values:
         - global_key_to_upload_dict - Dictionary where {key=global_key : value=data row dictionary in upload format}
         - errors - List of dictionaries containing conversion error information; see connector.create_data_rows() for more information
     """
-    table_length = connector.get_table_length_function(table=table)
+    table_length = connector.get_table_length_function(table=table, extra_client=extra_client)
     if verbose:
         print(f'Creating upload list - {table_length} rows in Pandas DataFrame')
-    if table_length != connector.get_unique_values_function(table=table, column_name=global_key_col):
+    if table_length != connector.get_unique_values_function(table=table, column_name=global_key_col, extra_client=extra_client):
         print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row per unique global key")     
     metadata_schema_to_name_key = labelbase.metadata.get_metadata_schema_to_name_key(client=lb_client, lb_mdo=False, divider=divider, invert=False)
     metadata_name_key_to_schema = labelbase.metadata.get_metadata_schema_to_name_key(client=lb_client, lb_mdo=False, divider=divider, invert=True) 
