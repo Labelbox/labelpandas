@@ -27,7 +27,7 @@ class Client():
     #     return table 
 
     def create_data_rows_from_table(
-        self, table:pd.core.frame.DataFrame, dataset_id:str"", project_id:str="", priority:int=5, 
+        self, table:pd.core.frame.DataFrame, dataset_id:str="", project_id:str="", priority:int=5, 
         upload_method:str="", skip_duplicates:bool=False, verbose:bool=False, divider="///"):
         """ Creates Labelbox data rows given a Pandas table and a Labelbox Dataset
         Args:
