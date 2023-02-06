@@ -54,8 +54,8 @@ class Client():
         # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name}
         row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = labelbase.connector.validate_columns(
             table=table,
-            get_columns_function=labelbase.connector.get_columns_function,
-            get_unique_values_function=labelbase.connector.get_unique_values_function,
+            get_columns_function=labelpandas.connector.get_columns_function,
+            get_unique_values_function=labelpandas.connector.get_unique_values_function,
             divider=divider,
             verbose=verbose,
             extra_client=None
@@ -89,7 +89,7 @@ class Client():
             
             # Create a dictionary where {key=global_key : value=data_row_id}
             global_key_to_data_row_id = labelbase.uploader.create_global_key_to_data_row_dict(
-                client=self.lb_client, global_keys=connector.get_unique_values_function(table, global_key_col)
+                client=self.lb_client, global_keys=labelpandas.connector.get_unique_values_function(table, global_key_col)
             )            
             
             # Create a dictionary where {key=project_id : value=list_of_data_row_ids}, if applicable
