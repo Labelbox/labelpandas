@@ -66,7 +66,7 @@ def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.
         futures = []
         if verbose:
             print(f'Submitting data rows...')
-            for row_dict in tqdm(df_dict):
+            for row_dict in tqdm(table_dict):
                 futures.append(exc.submit(
                     create_data_rows, client, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, dataset_id_col, 
@@ -80,7 +80,7 @@ def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.
                 global_key = str(data_row_dict["global_key"])
                 dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})                
         else:
-            for row_dict in tqdm(df_dict):
+            for row_dict in tqdm(table_dict):
                 futures.append(exc.submit(
                     create_data_rows, client, row_dict, metadata_name_key_to_schema, metadata_schema_to_name_key, 
                     row_data_col, global_key_col, external_id_col, dataset_id_col, 
