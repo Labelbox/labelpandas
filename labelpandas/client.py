@@ -101,7 +101,7 @@ class Client():
         
             # Batch data rows to projects, if applicable
             batch_to_project_results = labelbase.uploader.batch_rows_to_project(
-                client=self.lb_client, project_id_to_batch_dict, priority=priority
+                client=self.lb_client, project_id_to_batch_dict=project_id_to_batch_dict, priority=priority
             )
             
             if (upload_method in ["mal", "import"]) and (annotation_index!={}):
