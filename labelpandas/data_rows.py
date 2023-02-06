@@ -99,7 +99,7 @@ def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.
 def create_data_rows(client:labelboxClient, row_dict:dict,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, 
                      row_data_col:str, global_key_col:str, external_id_col:str, dataset_id_col:str,
-                     metadata_index:str, metadata_index:dict, attachment_index:dict, 
+                     dataset_id:str, metadata_index:dict, attachment_index:dict, 
                      divider:str):
     """ Function to-be-multithreaded to create data row dictionaries from a Pandas DataFrame
     Args:
