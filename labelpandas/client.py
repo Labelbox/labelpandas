@@ -1,9 +1,9 @@
 from labelbox import Client as labelboxClient
 from labelbox.schema.dataset import Dataset as labelboxDataset
-from labelbase.metadata import sync_metadata_fields
-from labelbase.uploader import batch_create_data_rows
+import labelpandas
+import labelbase
 import pandas as pd
-from labelpandas import connector
+
 
 class Client():
     """
@@ -27,64 +27,110 @@ class Client():
     #     return table 
 
     def create_data_rows_from_table(
-        self, table:pd.core.frame.DataFrame, lb_dataset:labelboxDataset, row_data_col:str, global_key_col=None, external_id_col=None,
-        metadata_index:dict={}, local_files:bool=False, skip_duplicates:bool=False, verbose:bool=False, divider="___"):
+        self, table:pd.core.frame.DataFrame, dataset_id:str"", project_id:str="", priority:int=5, 
+        upload_method:str="", skip_duplicates:bool=False, verbose:bool=False, divider="///"):
         """ Creates Labelbox data rows given a Pandas table and a Labelbox Dataset
         Args:
-            table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
-            lb_dataset      :   Required (labelbox.schema.dataset.Dataset) - Labelbox dataset to add data rows to            
-            row_data_col    :   Required (str) - Column containing asset URL or file path
-            local_files     :   Required (bool) - Determines how to handle row_data_col values
-                                    If True, treats row_data_col values as file paths uploads the local files to Labelbox
-                                    If False, treats row_data_col values as urls (assuming delegated access is set up)
-            global_key_col  :   Optional (str) - Column name containing the data row global key - defaults to row_data_col
-            external_id_col :   Optional (str) - Column name containing the data row external ID - defaults to global_key_col
-            metadata_index  :   Required (dict) - Dictionary where {key=column_name : value=metadata_type}
-                                    metadata_type must be either "enum", "string", "datetime" or "number"
-            skip_duplicates :   Optional (bool) - Determines how to handle if a global key to-be-uploaded is already in use
-                                    If True, will skip duplicate global_keys and not upload them
-                                    If False, will generate a unique global_key with a suffix "_1", "_2" and so on
-            verbose         :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
-            divider         :   Optional (str) - String delimiter for all name keys generated for parent/child schemas
-        Returns:
-            A dictionary with "upload_results" and "conversion_errors" keys
-            - "upload_results" key pertains to the results of the data row upload itself
-            - "conversion_errors" key pertains to any errors related to data row conversion
-        """    
-        
-        # Ensure all your metadata_index keys are metadata fields in Labelbox and that your Pandas DataFrame has all the right columns
-        table = sync_metadata_fields(
-            client=self.lb_client, table=table, get_columns_function=connector.get_columns_function, add_column_function=connector.add_column_function, 
-            get_unique_values_function=connector.get_unique_values_function, metadata_index=metadata_index, verbose=verbose
+            table               :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
+            dataset_id          :   Required (str) - Labelbox dataset ID to add data rows to - only necessary if no "dataset_id" column exists            
+            project_id          :   Required (str) - Labelbox project ID to add data rows to - only necessary if no "project_id" column exists
+            priority            :   Optinoal (int) - Between 1 and 5, what priority to give to data row batches sent to projects                             
+            upload_method       :   Optional (str) - Either "mal" or "import" - required to upload annotations (otherwise leave as "")
+            skip_duplicates     :   Optional (bool) - Determines how to handle if a global key to-be-uploaded is already in use
+                                        If True, will skip duplicate global_keys and not upload them
+                                        If False, will generate a unique global_key with a suffix {divider} + "1", "2" and so on
+            verbose             :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
+            divider             :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys
+        """
+        # Create a metadata_index, attachment_index, and annotation_index
+        # row_data_col      : column with name "row_data"
+        # global_key_col    : column with name "global_key" - defaults to row_data_col
+        # external_id_col   : column with name "external_id" - defaults to global_key_col
+        # project_id_col    : column with name "project_id" - defaults to "" (requires project_id input argument if no "project_id" column exists)
+        # dataset_id_col    : column with name "dataset_id" - defaults to "" (requires project_id input argument if no "dataset_id" column exists)        
+        # external_id_col   : column with name "external_id" - defaults to global_key_col        
+        # metadata_index    : Dictonary where {key=column_name : value=metadata_type}
+        # attachment_index  : Dictonary where {key=column_name : value=attachment_type}
+        # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name}
+        row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = labelbase.connector.validate_columns(
+            table=table,
+            get_columns_function=connector.get_columns_function,
+            get_unique_values_function=connector.get_unique_values_function,
+            divider=divider,
+            verbose=verbose,
+            extra_client=None
         )
         
-        # If df returns False, the sync failed - terminate the upload
-        if type(table) == bool:
-            return {"upload_results" : [], "conversion_errors" : []}
+        # Iterating over your pandas DataFrame is faster once converted to a list of dictionaries where {key=column_name : value=row_value}
+        table_dict = table.to_dict('records')
         
-        # Create a dictionary where {key=global_key : value=labelbox_upload_dictionary} - this is unique to Pandas
-        global_key_to_upload_dict, conversion_errors = connector.create_upload_dict(
-            table=table, lb_client=self.lb_client,
-            row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
-            metadata_index=metadata_index, local_files=local_files, divider=divider, verbose=verbose
+        if (dataset_id_col=="") and (dataset_id==""):
+            raise ValueError(f"To create data rows, please provide either a `dataset_id` column or a Labelbox dataset id to argument `dataset_id`")
+        
+        if (upload_method!="") and (project_id_col=="") and (project_id=="") and (annotation_index!={}):
+            raise ValueError(f"To upload annotations, please provide either a `project_id` column or a Lablebox project id to argument `project_id`")
+        
+        # Create a dictionary where {key=dataset_id : value={key=global_key : value=data_row_upload_dict}} - this is unique to Pandas
+        dataset_to_global_key_to_upload_dict = labelpandas.data_rows.create_data_row_upload_dict(
+            client=self.lb_client, table=table, table_dict=table_dict, 
+            row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, dataset_id_col=dataset_id_col,
+            dataset_id=dataset_id, metadata_index=metadata_index, attachment_index=attachment_index, 
+            divider=divider, verbose=verbose, extra_client=None
         )
-        
-        # If there are conversion errors, let the user know; if there are no successful conversions, terminate the upload
-        if conversion_errors:
-            print(f'There were {len(conversion_errors)} errors in creating your upload list - see result["conversion_errors"] for more information')
-            if global_key_to_upload_dict:
-                print(f'Data row upload will continue')
-            else:
-                print(f'Data row upload will not continue')  
-                return {"upload_results" : [], "conversion_errors" : errors}
                 
         # Upload your data rows to Labelbox
-        upload_results = batch_create_data_rows(
-            client=self.lb_client, dataset=lb_dataset, global_key_to_upload_dict=global_key_to_upload_dict, 
+        data_row_upload_results = labelbase.uploader.batch_create_data_rows(
+            client=self.lb_client, dataset_to_global_key_to_upload_dict=dataset_to_global_key_to_upload_dict, 
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
-        return {"upload_results" : upload_results, "conversion_errors" : conversion_errors}
+        # If project ids are provided, we can batch data rows to projects
+        if project_id or project_id_col:
+            
+            # Create a dictionary where {key=global_key : value=data_row_id}
+            global_key_to_data_row_id = labelbase.uploader.create_global_key_to_data_row_dict(
+                client=self.lb_client, global_keys=connector.get_unique_values_function(table, global_key_col)
+            )            
+            
+            # Create a dictionary where {key=project_id : value=list_of_data_row_ids}, if applicable
+            project_id_to_batch_dict = labelpandas.batches.create_batches_dict(
+                client=self.lb_client, table=table, table_dict=table_dict,
+                global_key_col=global_key_col, project_id_col=project_id_col, 
+                global_key_to_data_row_id=global_key_to_data_row_id
+            )
+        
+            # Batch data rows to projects, if applicable
+            batch_to_project_results = labelbase.uploader.batch_rows_to_project(
+                client=self.lb_client, project_id_to_batch_dict, priority=priority
+            )
+            
+            if (upload_method in ["mal", "import"]) and (annotation_index!={}):
+            
+                # Create a dictionary where {key=project_id : value=annotation_upload_list}, if applicable
+                project_id_to_upload_dict = connector.create_annotation_upload_dict(
+                    client=self.lb_client, table=table, table_dict=table_dict,
+                    row_data_col=row_data_col, global_key_col=global_key_col, project_id_col=project_id_col, 
+                    project_id=project_id, annotation_index=annotation_index, global_key_to_data_row_id=global_key_to_data_row_id,
+                    divider=divider, verbose=verbose
+                )
+
+                # Upload your annotations to Labelbox, if applicable
+                annotation_upload_results = uploader.batch_upload_annotations(
+                    client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
+                )
+                
+            else: # If no proper upload_method is provided or annotation_index is generated, we don't upload annotations
+                annotation_upload_results = []
+
+        else: # If project ids are not provided, we don't batch data rows to projects or upload annotations
+            batch_to_project_results = []
+            annotation_upload_results = []
+            
+        return {
+            "data_row_upload_results" : data_row_upload_results, 
+            "batch_to_project_results" : batch_to_project_results,
+            "annotation_upload_results" : annotation_upload_results
+        }
     
     # def upsert_table_metadata():
     #     return table
