@@ -47,7 +47,7 @@ def create_annotation_upload_dict(client:labelboxClient, table:pandas.core.frame
         project_id_to_ontology[project_id] = {
             "ontology_index" : labelbase.ontology.get_ontology_schema_to_name_path(ontology, divider=divider, invert=True, detailed=True),
             "schema_to_name_path" : labelbase.ontology.get_ontology_schema_to_name_path(ontology, divider=divider, invert=False, detailed=False)
-        )
+        }
     if verbose:
         for row_dict in tqdm(table_dict):
             for column_name in annotation_index.keys():
