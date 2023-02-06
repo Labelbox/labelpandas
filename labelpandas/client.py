@@ -53,6 +53,7 @@ class Client():
         # attachment_index  : Dictonary where {key=column_name : value=attachment_type}
         # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name}
         row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = labelbase.connector.validate_columns(
+            client=self.lb_client,
             table=table,
             get_columns_function=labelpandas.connector.get_columns_function,
             get_unique_values_function=labelpandas.connector.get_unique_values_function,
