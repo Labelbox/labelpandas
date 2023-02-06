@@ -54,8 +54,8 @@ class Client():
         # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name}
         row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = labelbase.connector.validate_columns(
             table=table,
-            get_columns_function=connector.get_columns_function,
-            get_unique_values_function=connector.get_unique_values_function,
+            get_columns_function=labelbase.connector.get_columns_function,
+            get_unique_values_function=labelbase.connector.get_unique_values_function,
             divider=divider,
             verbose=verbose,
             extra_client=None
@@ -107,7 +107,7 @@ class Client():
             if (upload_method in ["mal", "import"]) and (annotation_index!={}):
             
                 # Create a dictionary where {key=project_id : value=annotation_upload_list}, if applicable
-                project_id_to_upload_dict = connector.create_annotation_upload_dict(
+                project_id_to_upload_dict = labelpandas.labels.create_annotation_upload_dict(
                     client=self.lb_client, table=table, table_dict=table_dict,
                     row_data_col=row_data_col, global_key_col=global_key_col, project_id_col=project_id_col, 
                     project_id=project_id, annotation_index=annotation_index, global_key_to_data_row_id=global_key_to_data_row_id,
@@ -115,7 +115,7 @@ class Client():
                 )
 
                 # Upload your annotations to Labelbox, if applicable
-                annotation_upload_results = uploader.batch_upload_annotations(
+                annotation_upload_results = labelbase.uploader.batch_upload_annotations(
                     client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
                 )
                 
