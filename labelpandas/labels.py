@@ -17,6 +17,7 @@ labels.py holds the function create_annotation_upload_dict() -- which creates th
 This is the format that labelbase.uploader.batch_upload_annotations() expects
 """
 import pandas
+import labelpandas
 import labelbase
 from labelbox import Client as labelboxClient
 from tqdm.autonotebook import tqdm
@@ -40,7 +41,7 @@ def create_annotation_upload_dict(client:labelboxClient, table:pandas.core.frame
     Returns:
         
     """
-    project_id_to_upload_dict = {project_id : [] for project_id in get_unique_values_function(table, project_id_col)}
+    project_id_to_upload_dict = {project_id : [] for project_id in labelpandas.connector.get_unique_values_function(table, project_id_col)}
     project_id_to_ontology = {}
     for project_id in project_id_to_upload_dict:
         ontology = client.get_project(project_id).ontology()
@@ -50,23 +51,26 @@ def create_annotation_upload_dict(client:labelboxClient, table:pandas.core.frame
         }
     if verbose:
         for row_dict in tqdm(table_dict):
+            id = project_id if project_id else row[project_id_col]
             for column_name in annotation_index.keys():
                 ndjsons = create_ndjsons(
                     data_row_id = global_key_to_data_row_id[global_key_col],
                     top_level_name=annotation_index[column_name],
                     annotation_values=row_dict[column_name],
-                    ontology_index=project_id_to_ontology_index[row[project_id_col]],
+                    ontology_index=project_id_to_ontology_index[id]["ontology_index"],
                     divider=divider
                 )
                 for ndjson in ndjsons:
-                    project_id_to_upload_dict[row[project_id_col]].append(ndjson)    
+                    project_id_to_upload_dict[id].append(ndjson)    
+    else:
         for row_dict in table_dict:
+            id = project_id if project_id else row[project_id_col]
             for column_name in annotation_index.keys():
                 ndjsons = create_ndjsons(
                     data_row_id = global_key_to_data_row_id[global_key_col],
                     top_level_name=annotation_index[column_name],
                     annotation_values=row_dict[column_name],
-                    ontology_index=project_id_to_ontology_index[row[project_id_col]],
+                    ontology_index=project_id_to_ontology_index[id]["ontology_index"],
                     divider=divider
                 )
                 for ndjson in ndjsons:
