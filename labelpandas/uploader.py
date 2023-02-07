@@ -164,7 +164,7 @@ def create_upload(row_dict:dict,
         data_row["attachments"] = [{"type" : attachment_index[column_name], "value" : row_dict[column_name]} for column_name in attachment_index]
     # Create a list of annotation ndjsons for a data row (does not include data row ID since data row has not been created)
     annotations = []        
-    if (annotation_index!={} and (project_id_to_ontology_index!={}):
+    if (annotation_index!={}) and (project_id_to_ontology_index!={}):
         ontology_index = project_id_to_ontology_index[projectId]
         for column_name in annotation_index.keys():
             annotations.extend(
