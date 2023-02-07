@@ -120,7 +120,7 @@ def create_upload(row_dict:dict,
                   project_id_col:str, project_id:str,
                   metadata_index:dict, attachment_index:dict, annotation_index:dict, 
                   project_id_to_ontology_index:dict, metadata_name_key_to_schema:dict,
-                  divider:str, verbose:bool)
+                  divider:str, verbose:bool):
     """ Takes a row as-a-dictinary and returns a dictionary where:
     {
         "data_row" : {
