@@ -96,7 +96,7 @@ class Client():
             # Create a dictionary where {key=project_id : value=list_of_data_row_ids}, if applicable
             project_id_to_batch_dict = labelpandas.batches.create_batches_dict(
                 table=table, table_dict=table_dict,
-                global_key_col=global_key_col, project_id_col=project_id_col, 
+                global_key_col=global_key_col, project_id_col=project_id_col, project_id=project_id,
                 global_key_to_data_row_id=global_key_to_data_row_id
             )
         
