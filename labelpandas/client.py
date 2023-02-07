@@ -74,8 +74,8 @@ class Client():
         # Create an upload dictionary where {
             # dataset_id : {
                 # global_key : {
-                    # "data_row" : {},
-                    # "project_id" : "" -- This batches data rows to projects, if applicable
+                    # "data_row" : {}, -- This is your data row upload as a dictionary
+                    # "project_id" : "", -- This batches data rows to projects, if applicable
                     # "annotations" : [] -- List of annotations for a given data row, if applicable
                 # }
             # }
