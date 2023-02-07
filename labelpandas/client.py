@@ -85,11 +85,11 @@ class Client():
         upload_dict = labelpandas.uploader.create_upload_dict(
             client=self.lb_client, table=table, table_dict=table_dict, 
             row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
-            dataset_id_col=dataset_id_col, project_id_col=project_id_col,
-            dataset_id=dataset_id, project_id=project_id,
-            metadata_index=metadata_index, attachment_index=attachment_index, 
-            divider=divider, verbose=verbose, extra_client=None
-        )
+            dataset_id_col=dataset_id_col, dataset_id=dataset_id, 
+            project_id_col=project_id_col, project_id=project_id,
+            metadata_index=metadata_index, attachment_index=attachment_index, annotation_index=annotation_index,
+            divider=divider, verbose=verbose
+        )      
                 
         # Upload your data rows to Labelbox - update upload_dict if global keys are modified during upload
         data_row_upload_results, upload_dict = labelbase.uploader.batch_create_data_rows(
