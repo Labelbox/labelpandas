@@ -126,7 +126,7 @@ class Client():
                             project_id_to_batch_dict[project_id].append(data_row_id)
                 # Batch data rows to projects
                 batch_to_project_results = labelbase.uploader.batch_rows_to_project(
-                    client=self.lb_client, project_id_to_batch_dict=project_id_to_batch_dict, priority=priority
+                    client=self.lb_client, project_id_to_batch_dict=project_id_to_batch_dict, priority=priority, verbose=verbose
                 )
             else:
                 batch = "Data rows were not batched to any projects"                
