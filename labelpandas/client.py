@@ -167,7 +167,8 @@ class Client():
         return {
             "data_row_upload_results" : data_row_upload_results, 
             "batch_to_project_results" : batch_to_project_results,
-            "annotation_upload_results" : annotation_upload_results
+            "annotation_upload_results" : annotation_upload_results,
+            "upload_dict" : upload_dict
         }
     
     # def upsert_table_metadata():
