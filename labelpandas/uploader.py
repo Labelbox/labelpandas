@@ -95,7 +95,6 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
     else:
         upload_dict = {id : {} for id in connector.get_unique_values_function(table=table, column_name=dataset_id_col)}    
     with ThreadPoolExecutor(max_workers=8) as exc:
-        errors = []
         futures = []
         for row_dict in table_dict:
             futures.append(exc.submit(
@@ -103,7 +102,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                 project_id_col, project_id, metadata_index, attachment_index, annotation_index, 
                 project_id_to_ontology_index, metadata_name_key_to_schema, divider, verbose 
             ))
-        for f in tqdm(as_completed(data_row_futures)):
+        for f in as_completed(futures):
             res = f.result()
             dataRow = res["data_row"]
             global_key = str(dataRow["global_key"])
