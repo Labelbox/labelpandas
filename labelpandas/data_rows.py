@@ -75,7 +75,7 @@ def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.
             print(f'Processing data rows...')
             for f in tqdm(as_completed(futures)):
                 res = f.result()
-                id = str(list(res.keys()))[0]
+                id = list(res.keys())[0]
                 data_row_dict = res[id]
                 global_key = str(data_row_dict["global_key"])
                 dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})                
