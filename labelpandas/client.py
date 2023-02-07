@@ -49,7 +49,7 @@ class Client():
         # project_id_col    : column with name "project_id" - defaults to "" (requires project_id input argument if no "project_id" column exists)
         # dataset_id_col    : column with name "dataset_id" - defaults to "" (requires project_id input argument if no "dataset_id" column exists)        
         # external_id_col   : column with name "external_id" - defaults to global_key_col        
-        # metadata_index    : Dictonary where {key=column_name : value=metadata_type}
+        # metadata_index    : Dictonary where {key=metadata_field_name : value=metadata_type}
         # attachment_index  : Dictonary where {key=column_name : value=attachment_type}
         # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name}
         row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = labelbase.connector.validate_columns(
