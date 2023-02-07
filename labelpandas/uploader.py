@@ -169,7 +169,7 @@ def create_upload(row_dict:dict,
             annotations.extend(
                 labelbase.annotate.create_ndjsons(
                     top_level_name=annotation_index[column_name],
-                    annotation_values=row_dict[column_name],
+                    annotation_inputs=row_dict[column_name],
                     ontology_index=ontology_index,
                     divider=divider
                 )
