@@ -104,7 +104,7 @@ class Client():
                 batch = True
                 # Create a dictionary where {key=global_key : value=data_row_id}
                 global_keys_list = []
-                for dataset_id in upload_dict:
+                for dataset_id in upload_dict.keys():
                     for global_key in upload_dict upload_dict[dataset_id].keys():
                         global_keys_list.append(global_key)
                 global_key_to_data_row_id = labelbase.uploader.create_global_key_to_data_row_dict(
@@ -143,13 +143,18 @@ class Client():
                 # }
                 # This uniforms the upload to use labelbase - Labelbox base code for best practices                  
                 project_id_to_upload_dict = {}
-                for dataset_id in upload_dict:
-                    for global_key in upload_dict upload_dict[dataset_id].keys():
+                for dataset_id in upload_dict.keys():
+                    for global_key in upload_dict[dataset_id].keys():
                         project_id = upload_dict[dataset_id][global_key]["project_id"]
-                        annotations = upload_dict[dataset_id][global_key]["annotations"]
+                        # Remember - the annotation list generated earlier doesn't have data row IDs, so here we add them in
+                        annotations_no_data_row_id = upload_dict[dataset_id][global_key]["annotations"]
                         if project_id not in project_id_to_upload_dict.keys():
                             project_id_to_upload_dict[project_id] = []
-                        project_id_to_upload_dict[project_id].extend(annotations)
+                        if annotations_no_data_row_id: # For each annotation in the list, add the data row ID and add it to your annotation upload dict
+                            for annotation in annotations_no_data_row_id:
+                                annotation_data_row_id = annotation
+                                annotation_data_row_id["dataRow"]["id"] = global_key_to_data_row_id[global_key]
+                                project_id_to_upload_dict[project_id].append(annotation_data_row_id)
                 # Upload your annotations to Labelbox
                 annotation_upload_results = labelbase.uploader.batch_upload_annotations(
                     client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
