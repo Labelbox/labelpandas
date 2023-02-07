@@ -94,7 +94,7 @@ def create_data_row_upload_dict(client:labelboxClient, table: pandas.core.frame.
                 dataset_to_global_key_to_upload_dict[id].update({global_key:data_row_dict})
     if verbose:
         print(f'Generated upload list')
-    return global_key_to_upload_dict
+    return dataset_to_global_key_to_upload_dict
   
 def create_data_rows(client:labelboxClient, row_dict:dict,
                      metadata_name_key_to_schema:dict, metadata_schema_to_name_key:dict, 
