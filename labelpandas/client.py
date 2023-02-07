@@ -153,7 +153,7 @@ class Client():
                         if annotations_no_data_row_id: # For each annotation in the list, add the data row ID and add it to your annotation upload dict
                             for annotation in annotations_no_data_row_id:
                                 annotation_data_row_id = annotation
-                                annotation_data_row_id["dataRow"]["id"] = global_key_to_data_row_id[global_key]
+                                annotation_data_row_id["dataRow"] = {"id" : global_key_to_data_row_id[global_key]}
                                 project_id_to_upload_dict[project_id].append(annotation_data_row_id)
                 # Upload your annotations to Labelbox
                 annotation_upload_results = labelbase.uploader.batch_upload_annotations(
