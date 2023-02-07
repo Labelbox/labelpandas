@@ -148,7 +148,7 @@ def create_upload(row_dict:dict,
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
             metadata_type = metadata_index[metadata_field_name]
-            column_name = f"metadata{divider}{metadata_type}{divider}{metadata_column_name}"
+            column_name = f"metadata{divider}{metadata_type}{divider}{metadata_field_name}"
             input_metadata = labelbase.metadata.process_metadata_value(
                 metadata_value=row_dict[column_name], metadata_type=metadata_type, 
                 parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
