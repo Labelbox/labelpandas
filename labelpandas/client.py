@@ -82,7 +82,7 @@ class Client():
         # }
         # This uniforms the upload to use labelbase - Labelbox base code for best practices
         
-        upload_dict = labelpandas.data_rows.create_upload_dict(
+        upload_dict = labelpandas.uploader.create_upload_dict(
             client=self.lb_client, table=table, table_dict=table_dict, 
             row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
             dataset_id_col=dataset_id_col, project_id_col=project_id_col,
