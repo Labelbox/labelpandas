@@ -85,47 +85,52 @@ class Client():
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
-        # If project ids are provided, we can batch data rows to projects
-        if project_id or project_id_col:
-            
-            # Create a dictionary where {key=global_key : value=data_row_id}
-            global_key_to_data_row_id = labelbase.uploader.create_global_key_to_data_row_dict(
-                client=self.lb_client, global_keys=labelpandas.connector.get_unique_values_function(table, global_key_col)
-            )            
-            
-            # Create a dictionary where {key=project_id : value=list_of_data_row_ids}, if applicable
-            project_id_to_batch_dict = labelpandas.batches.create_batches_dict(
-                table=table, table_dict=table_dict,
-                global_key_col=global_key_col, project_id_col=project_id_col, project_id=project_id,
-                global_key_to_data_row_id=global_key_to_data_row_id
-            )
-        
-            # Batch data rows to projects, if applicable
-            batch_to_project_results = labelbase.uploader.batch_rows_to_project(
-                client=self.lb_client, project_id_to_batch_dict=project_id_to_batch_dict, priority=priority
-            )
-            
-            if (upload_method in ["mal", "import"]) and (annotation_index!={}):
-            
-                # Create a dictionary where {key=project_id : value=annotation_upload_list}, if applicable
-                project_id_to_upload_dict = labelpandas.labels.create_annotation_upload_dict(
-                    client=self.lb_client, table=table, table_dict=table_dict,
-                    row_data_col=row_data_col, global_key_col=global_key_col, project_id_col=project_id_col, 
-                    project_id=project_id, annotation_index=annotation_index, global_key_to_data_row_id=global_key_to_data_row_id,
-                    divider=divider, verbose=verbose
+        try:
+            # If project ids are provided, we can batch data rows to projects
+            if project_id or project_id_col:
+
+                # Create a dictionary where {key=global_key : value=data_row_id}
+                global_key_to_data_row_id = labelbase.uploader.create_global_key_to_data_row_dict(
+                    client=self.lb_client, global_keys=labelpandas.connector.get_unique_values_function(table, global_key_col)
+                )            
+
+                # Create a dictionary where {key=project_id : value=list_of_data_row_ids}, if applicable
+                project_id_to_batch_dict = labelpandas.batches.create_batches_dict(
+                    table=table, table_dict=table_dict,
+                    global_key_col=global_key_col, project_id_col=project_id_col, project_id=project_id,
+                    global_key_to_data_row_id=global_key_to_data_row_id
                 )
 
-                # Upload your annotations to Labelbox, if applicable
-                annotation_upload_results = labelbase.uploader.batch_upload_annotations(
-                    client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
+                # Batch data rows to projects, if applicable
+                batch_to_project_results = labelbase.uploader.batch_rows_to_project(
+                    client=self.lb_client, project_id_to_batch_dict=project_id_to_batch_dict, priority=priority
                 )
-                
-            else: # If no proper upload_method is provided or annotation_index is generated, we don't upload annotations
+
+                if (upload_method in ["mal", "import"]) and (annotation_index!={}):
+
+                    # Create a dictionary where {key=project_id : value=annotation_upload_list}, if applicable
+                    project_id_to_upload_dict = labelpandas.labels.create_annotation_upload_dict(
+                        client=self.lb_client, table=table, table_dict=table_dict,
+                        row_data_col=row_data_col, global_key_col=global_key_col, project_id_col=project_id_col, 
+                        project_id=project_id, annotation_index=annotation_index, global_key_to_data_row_id=global_key_to_data_row_id,
+                        divider=divider, verbose=verbose
+                    )
+
+                    # Upload your annotations to Labelbox, if applicable
+                    annotation_upload_results = labelbase.uploader.batch_upload_annotations(
+                        client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
+                    )
+
+                else: # If no proper upload_method is provided or annotation_index is generated, we don't upload annotations
+                    annotation_upload_results = []
+
+            else: # If project ids are not provided, we don't batch data rows to projects or upload annotations
+                batch_to_project_results = []
                 annotation_upload_results = []
-
-        else: # If project ids are not provided, we don't batch data rows to projects or upload annotations
+        
+        except:
             batch_to_project_results = []
-            annotation_upload_results = []
+            annotation_upload_results = []            
             
         return {
             "data_row_upload_results" : data_row_upload_results, 
