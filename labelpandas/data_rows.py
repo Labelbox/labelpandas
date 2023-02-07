@@ -128,8 +128,10 @@ def create_data_rows(client:labelboxClient, row_dict:dict,
     metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "Pandas"}]
     if metadata_index:
         for metadata_field_name in metadata_index.keys():
+            metadata_type = metadata_index[metadata_field_name]
+            column_name = f"metadata{divider}{metadata_type}{divider}{metadata_field_name}"
             input_metadata = labelbase.metadata.process_metadata_value(
-                client=client, metadata_value=row_dict[metadata_field_name], metadata_type=metadata_index[metadata_field_name], 
+                client=client, metadata_value=row_dict[metadata_field_name], metadata_type=metadata_type, 
                 parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
             )
             if input_metadata:
