@@ -3,7 +3,7 @@ from tqdm import tqdm
 from labelpandas import connector
 import pandas
 
-def create_urls(client:lpClient, table:pa, file_path_column: str, client:, verbose=False):
+def load_local_files(client:lpClient, table:pa, file_path_column: str, client:, verbose=False):
     """ Creates temporary URLs that can be used to create Labelbox data rows
     Args:
         client            :     Required (labelpandas.client.Client) - LabelPandas Client object
