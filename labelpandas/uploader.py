@@ -137,7 +137,10 @@ def create_upload(row_dict:dict,
     """
     # Determine project ID and dataset ID
     datasetId = dataset_id if dataset_id else row_dict[dataset_id_col]
-    projectId = project_id if project_id else row_dict[project_id_col]
+    if project_id == project_id_col == "":
+        projectId = ""
+    else:
+        projectId = project_id if project_id else row_dict[project_id_col]
     # Create a base data row dictionary
     data_row = {
         "row_data" : row_dict[row_data_col],
