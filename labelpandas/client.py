@@ -88,7 +88,7 @@ class Client():
             dataset_id_col=dataset_id_col, dataset_id=dataset_id, 
             project_id_col=project_id_col, project_id=project_id,
             metadata_index=metadata_index, attachment_index=attachment_index, annotation_index=annotation_index,
-            divider=divider, verbose=verbose
+            upload_method=upload_method, divider=divider, verbose=verbose
         )      
                 
         # Upload your data rows to Labelbox - update upload_dict if global keys are modified during upload
