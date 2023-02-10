@@ -28,11 +28,11 @@ def validate_column(old_col_name:str, new_col_name:str, existing_col_names:list)
         raise ValueError(f"Argument `rename_dict` requires a dictionary where:\n            \n        old_column_name : new_column_name,\n        old_column_name : new_column_name\n    \nReceived key {old_col_name} which is not an existing column name")    
     if col_name in ["row_data", "external_id", "global_key"]:
         valid_column = True
-    elif col_name.startswith("metadata")
+    elif col_name.startswith("metadata"):
         valid_column = True
-    elif col_name.startswith("attachment")
+    elif col_name.startswith("attachment"):
         valid_column = True
-    elif col_name.startswith("annotation")
+    elif col_name.startswith("annotation"):
         valid_column = True   
     else:
         valid_column = False
