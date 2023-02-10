@@ -57,6 +57,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
         metadata_index              :   Required (dict) - Dictonary where {key=metadata_field_name : value=metadata_type}
         attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}
         annotation_index            :   Required (dict) - Dictonary where {key=column_name : value=top_level_feature_name}
+        upload_method               :   Required (str) - Either "mal" or "import" - required to upload annotations (otherwise leave as "")
         divider                     :   Required (str) - String delimiter for all name keys generated
         verbose                     :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
         extra_client                :   Ignore this value - necessary for other labelbase integrations                
@@ -100,7 +101,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
             futures.append(exc.submit(
                 create_upload, row_dict, row_data_col, global_key_col, external_id_col, dataset_id_col, dataset_id,
                 project_id_col, project_id, metadata_index, attachment_index, annotation_index, 
-                project_id_to_ontology_index, metadata_name_key_to_schema, divider, verbose 
+                project_id_to_ontology_index, metadata_name_key_to_schema, upload_method, divider, verbose 
             ))
         for f in as_completed(futures):
             res = f.result()
