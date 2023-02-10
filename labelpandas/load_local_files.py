@@ -3,7 +3,7 @@ from tqdm import tqdm
 from labelpandas import connector
 import pandas
 
-def load_local_files(client:lpClient, table:pa, file_path_column: str, client:, verbose=False):
+def load_local_files(client:lpClient, table:pandas.core.frame.DataFrame, file_path_column: str, verbose=False):
     """ Creates temporary URLs that can be used to create Labelbox data rows
     Args:
         client            :     Required (labelpandas.client.Client) - LabelPandas Client object
@@ -16,7 +16,7 @@ def load_local_files(client:lpClient, table:pa, file_path_column: str, client:, 
     existing_cols = connector.get_columns_function(table=table, extra_client=None)
     if "row_data" in existing_cols:
         print(f"Warning - column with name `row_data` already exists - renaming this column to `old_row_data` and creating a new `row_data` column with URL values to-be-used in creating Labelbox data rows")
-        table = table
+        table = table.rename(columns={"row_data":"old_row_data"})
     url_column = []
     if verbose:
         table_length = connector.get_table_length_function(table=table, extra_client=None)
