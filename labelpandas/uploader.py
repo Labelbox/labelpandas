@@ -41,7 +41,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                        dataset_id_col:str, dataset_id:str,
                        project_id_col:str, project_id:str,
                        metadata_index:dict, attachment_index:dict, annotation_index:dict,
-                       divider:str, verbose:bool, extra_client:bool=None):
+                       upload_method:str, divider:str, verbose:bool, extra_client:bool=None):
     """
     Args:
         client                      :   Required (labelbox.client.Client) - Labelbox Client object        
@@ -82,7 +82,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
     else:
         project_ids = []
     project_id_to_ontology_index = {}
-    if project_ids:
+    if (project_ids!=[]) and (atachment_index!={}) and (upload_method in ["mal", "import"]): # If we're uploading annotations
         for projectId in project_ids:
             ontology_index = labelbase.ontology.get_ontology_schema_to_name_path(
                 ontology=client.get_project(projectId).ontology(), 
@@ -119,7 +119,7 @@ def create_upload(row_dict:dict,
                   project_id_col:str, project_id:str,
                   metadata_index:dict, attachment_index:dict, annotation_index:dict, 
                   project_id_to_ontology_index:dict, metadata_name_key_to_schema:dict,
-                  divider:str, verbose:bool):
+                  upload_method:str, divider:str, verbose:bool):
     """ Takes a row as-a-dictinary and returns a dictionary where:
     {
         "data_row" : {
@@ -163,7 +163,7 @@ def create_upload(row_dict:dict,
         data_row["attachments"] = [{"type" : attachment_index[column_name], "value" : row_dict[column_name]} for column_name in attachment_index]
     # Create a list of annotation ndjsons for a data row (does not include data row ID since data row has not been created)
     annotations = []        
-    if (annotation_index!={}) and (project_id_to_ontology_index!={}):
+    if (annotation_index!={}) and (project_id_to_ontology_index!={}) and (upload_method in ["mal", "import"]):
         ontology_index = project_id_to_ontology_index[projectId]
         for column_name in annotation_index.keys():
             annotations.extend(
