@@ -17,32 +17,17 @@ This library is currently in beta. It may contain errors or inaccuracies and may
 
 ## Table of Contents
 
-* [Requirements](#requirements)
-* [Configuration](#configuration)
-* [Use](#Use)
+* [Requirements](#Requirements)
+* [Example Notebooks](#Example Notebooks)
 
 ## Requirements
 
 * [Labelbox account](http://app.labelbox.com/)
 * [Generate a Labelbox API key](https://labelbox.com/docs/api/getting-started#create_api_key)
 
-## Configuration
+## Example Notebooks
 
-Install labelpandas to your Python environment. The installation will also add the Labelbox SDK.
-
-```
-pip install labelpandas
-import labelpandas
-```
-
-## Use
-
-The `client` class requires the following arguments:
-- `lb_api_key` = Labelbox API Key
-
-## Labelbox SDK Examples
-
-### Importing Data
+### Importing Data from a CSV
 
 |            Notebook            |  Github  |    Google Colab   |
 | ------------------------------ | -------- | ----------------- |
