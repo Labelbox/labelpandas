@@ -17,8 +17,8 @@ This library is currently in beta. It may contain errors or inaccuracies and may
 
 ## Table of Contents
 
-* [Requirements](#Requirements)
-* [Example Notebooks](#Example Notebooks)
+* [Requirements](#requirements)
+* [Example Notebooks](#example-notebooks)
 
 ## Requirements
 
