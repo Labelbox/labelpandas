@@ -1,4 +1,4 @@
-external_id,urls,global_key,metadata///string///LabelPandas-String,metadata///number///LabelPandas-Number,metadata///enum///LabelPandas-Enum,metadata///datetime///LabelPandas-Datetime
+external_id,row_data,global_key,metadata///string///LabelPandas-String,metadata///number///LabelPandas-Number,metadata///enum///LabelPandas-Enum,metadata///datetime///LabelPandas-Datetime
 Euq7yrfb8tbDFpd-cv_cpg.jpg,https://labelbox.s3-us-west-2.amazonaws.com/datasets/mapillary_traffic/images/Euq7yrfb8tbDFpd-cv_cpg.jpg,labelpandas-urls-test-Euq7yrfb8tbDFpd-cv_cpg.jpg,Raw Text String 0,5256,C,03/05/1908 12:13 PM
 gCbn5IeZtE92OaUbyl1ZjQ.jpg,https://labelbox.s3-us-west-2.amazonaws.com/datasets/mapillary_traffic/images/gCbn5IeZtE92OaUbyl1ZjQ.jpg,labelpandas-urls-test-gCbn5IeZtE92OaUbyl1ZjQ.jpg,Raw Text String 1,3999,B,01/30/1926 11:39 PM
 9Y6-Vl3bwsZFTNxX8gqHYw.jpg,https://labelbox.s3-us-west-2.amazonaws.com/datasets/mapillary_traffic/images/9Y6-Vl3bwsZFTNxX8gqHYw.jpg,labelpandas-urls-test-9Y6-Vl3bwsZFTNxX8gqHYw.jpg,Raw Text String 2,809,A,01/23/1974 05:06 AM
