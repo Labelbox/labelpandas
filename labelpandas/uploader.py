@@ -83,7 +83,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
     else:
         project_ids = []
     project_id_to_ontology_index = {}
-    if (project_ids!=[]) and (atachment_index!={}) and (upload_method in ["mal", "import"]): # If we're uploading annotations
+    if (project_ids!=[]) and (attachment_index!={}) and (upload_method in ["mal", "import"]): # If we're uploading annotations
         for projectId in project_ids:
             ontology_index = labelbase.ontology.get_ontology_schema_to_name_path(
                 ontology=client.get_project(projectId).ontology(), 
