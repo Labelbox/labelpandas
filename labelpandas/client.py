@@ -38,7 +38,7 @@ class Client():
         """
         flattened_labels_dict = labelbase.downloader.export_and_flatten_labels(
             client=self.lb_client, project=project, 
-            include_metadata=include_metadata, include_performance=include_performance, include_agreement=include_agreement
+            include_metadata=include_metadata, include_performance=include_performance, include_agreement=include_agreement,
             verbose=verbose, divider=divider
         )
         
