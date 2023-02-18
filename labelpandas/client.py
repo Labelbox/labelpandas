@@ -44,6 +44,9 @@ class Client():
         
         table = pd.DataFrame.from_dict(flattened_labels_dict)
         
+        if verbose:
+            print(f"Success: DataFrame generated")
+        
         return table 
 
     def create_data_rows_from_table(
