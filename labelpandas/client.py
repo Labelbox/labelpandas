@@ -23,17 +23,23 @@ class Client():
 
         self.lb_client = labelboxClient(lb_api_key, endpoint=lb_endpoint, enable_experimental=lb_enable_experimental, app_url=lb_app_url)
            
-    def export_to_table(self, project, include_metadata:bool=True, verbose:bool=False, divider="///"):
+    def export_to_table(
+        self, project, 
+        include_metadata:bool=False, include_performance:bool=False, include_agreement:bool=False,
+        verbose:bool=False, divider="///"):
         """ Creates a Pandas DataFrame given a Labelbox Projet ID
         Args:
-            project             :   Required (str / lablebox.Project) - Labelbox Project ID or lablebox.Project object to export labels from
-            include_metadata    :   Optional (bool) - If included, exports metadata fields
-            verbose             :   Optional (bool) - If True, prints details about code execution; if False, prints minimal information
-            divider             :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys
+            project                 :   Required (str / lablebox.Project) - Labelbox Project ID or lablebox.Project object to export labels from
+            include_metadata        :   Optional (bool) - If included, exports metadata fields
+            include_performance     :   Optional (bool) - If included, exports labeling performance
+            include_agreement       :   Optional (bool) - If included, exports consensus scores       
+            verbose                 :   Optional (bool) - If True, prints details about code execution; if False, prints minimal information
+            divider                 :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys 
         """
-        
         flattened_labels_dict = labelbase.downloader.export_and_flatten_labels(
-            client=self.lb_client, project=project, include_metadata=include_metadata, verbose=verbose, divider=divider
+            client=self.lb_client, project=project, 
+            include_metadata=include_metadata, include_performance=include_performance, include_agreement=include_agreement
+            verbose=verbose, divider=divider
         )
         
         table = pd.DataFrame.from_dict(flattened_labels_dict)
