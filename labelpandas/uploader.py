@@ -90,7 +90,6 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                 divider=divider, invert=True, detailed=True
             )
             project_id_to_ontology_index[projectId] = ontology_index
-    print(project_id_to_ontology_index)
     # Initiate your upload dict, where they keys are all your dataset IDs
     if dataset_id:
         upload_dict = {dataset_id : {}}
