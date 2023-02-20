@@ -113,8 +113,6 @@ class Client():
             metadata_index=metadata_index, attachment_index=attachment_index, annotation_index=annotation_index,
             upload_method=upload_method, divider=divider, verbose=verbose
         )      
-        
-        print(upload_dict)
                 
         # Upload your data rows to Labelbox - update upload_dict if global keys are modified during upload
         data_row_upload_results, upload_dict = labelbase.uploader.batch_create_data_rows(
