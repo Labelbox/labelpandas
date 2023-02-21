@@ -13,5 +13,5 @@ setuptools.setup(
     long_description_content_type="text/markdown",    
     url='https://github.com/Labelbox/labelpandas',    
     packages=setuptools.find_packages(),
-    install_requires=["labelbox", "labelbase", "packaging"]
+    install_requires=["labelbox[data]", "labelbase", "packaging"]
 )
