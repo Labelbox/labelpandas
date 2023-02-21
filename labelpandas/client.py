@@ -26,7 +26,7 @@ class Client():
     def export_to_table(
         self, project, 
         include_metadata:bool=False, include_performance:bool=False, include_agreement:bool=False,
-        verbose:bool=False, divider="///"):
+        verbose:bool=False, mask_method:str="png", divider="///"):
         """ Creates a Pandas DataFrame given a Labelbox Projet ID
         Args:
             project                 :   Required (str / lablebox.Project) - Labelbox Project ID or lablebox.Project object to export labels from
@@ -34,12 +34,16 @@ class Client():
             include_performance     :   Optional (bool) - If included, exports labeling performance
             include_agreement       :   Optional (bool) - If included, exports consensus scores       
             verbose                 :   Optional (bool) - If True, prints details about code execution; if False, prints minimal information
+            mask_method             :   Optional (str) - Specifies your desired mask data format
+                                            - "url" leaves masks as-is
+                                            - "array" converts URLs to numpy arrays
+                                            - "png" converts URLs to png byte strings             
             divider                 :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys 
         """
         flattened_labels_dict = labelbase.downloader.export_and_flatten_labels(
             client=self.lb_client, project=project, 
             include_metadata=include_metadata, include_performance=include_performance, include_agreement=include_agreement,
-            verbose=verbose, divider=divider
+            verbose=verbose, mask_method=mask_method, divider=divider
         )
         
         table = pd.DataFrame.from_dict(flattened_labels_dict)
@@ -63,6 +67,10 @@ class Client():
                                         If True, will skip duplicate global_keys and not upload them
                                         If False, will generate a unique global_key with a suffix {divider} + "1", "2" and so on
             verbose             :   Optional (bool) - If True, prints details about code execution; if False, prints minimal information
+            mask_method         :   Optional (str) - Specifies your input mask data format
+                                        - "url" means your mask is an accessible URL (must provide color)
+                                        - "array" means your mask is a numpy array (must provide color)
+                                        - "png" means your mask value is a png-string                  
             divider             :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys
         """
         # Create a metadata_index, attachment_index, and annotation_index
@@ -111,7 +119,7 @@ class Client():
             dataset_id_col=dataset_id_col, dataset_id=dataset_id, 
             project_id_col=project_id_col, project_id=project_id,
             metadata_index=metadata_index, attachment_index=attachment_index, annotation_index=annotation_index,
-            upload_method=upload_method, divider=divider, verbose=verbose
+            upload_method=upload_method, divider=divider, mask_method=mask_method, verbose=verbose
         )      
                 
         # Upload your data rows to Labelbox - update upload_dict if global keys are modified during upload
