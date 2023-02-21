@@ -43,7 +43,7 @@ class Client():
         flattened_labels_dict = labelbase.downloader.export_and_flatten_labels(
             client=self.lb_client, project=project, 
             include_metadata=include_metadata, include_performance=include_performance, include_agreement=include_agreement,
-            verbose=verbose, mask_method=mask_method, divider=divider
+            mask_method=mask_method, verbose=verbose, divider=divider
         )
         
         table = pd.DataFrame.from_dict(flattened_labels_dict)
@@ -55,7 +55,7 @@ class Client():
 
     def create_data_rows_from_table(
         self, table:pd.core.frame.DataFrame, dataset_id:str="", project_id:str="", priority:int=5, 
-        upload_method:str="", skip_duplicates:bool=False, verbose:bool=False, mask_method:str="png", divider="///"):
+        upload_method:str="", skip_duplicates:bool=False, mask_method:str="png", verbose:bool=False, divider="///"):
         """ Creates Labelbox data rows given a Pandas table and a Labelbox Dataset
         Args:
             table               :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame    
@@ -66,11 +66,11 @@ class Client():
             skip_duplicates     :   Optional (bool) - Determines how to handle if a global key to-be-uploaded is already in use
                                         If True, will skip duplicate global_keys and not upload them
                                         If False, will generate a unique global_key with a suffix {divider} + "1", "2" and so on
-            verbose             :   Optional (bool) - If True, prints details about code execution; if False, prints minimal information
             mask_method         :   Optional (str) - Specifies your input mask data format
                                         - "url" means your mask is an accessible URL (must provide color)
                                         - "array" means your mask is a numpy array (must provide color)
-                                        - "png" means your mask value is a png-string                  
+                                        - "png" means your mask value is a png-string                                           
+            verbose             :   Optional (bool) - If True, prints details about code execution; if False, prints minimal information               
             divider             :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys
         """
         # Create a metadata_index, attachment_index, and annotation_index
@@ -119,7 +119,7 @@ class Client():
             dataset_id_col=dataset_id_col, dataset_id=dataset_id, 
             project_id_col=project_id_col, project_id=project_id,
             metadata_index=metadata_index, attachment_index=attachment_index, annotation_index=annotation_index,
-            upload_method=upload_method, divider=divider, mask_method=mask_method, verbose=verbose
+            upload_method=upload_method, mask_method=mask_method, divider=divider, verbose=verbose
         )      
                 
         # Upload your data rows to Labelbox - update upload_dict if global keys are modified during upload
