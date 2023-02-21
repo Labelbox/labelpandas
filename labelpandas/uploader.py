@@ -41,7 +41,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                        dataset_id_col:str, dataset_id:str,
                        project_id_col:str, project_id:str,
                        metadata_index:dict, attachment_index:dict, annotation_index:dict,
-                       upload_method:str, divider:str, verbose:bool, extra_client:bool=None):
+                       upload_method:str, mask_method:str, divider:str, verbose:bool, extra_client:bool=None):
     """
     Args:
         client                      :   Required (labelbox.client.Client) - Labelbox Client object        
@@ -58,6 +58,10 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
         attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}
         annotation_index            :   Required (dict) - Dictonary where {key=column_name : value=top_level_feature_name}
         upload_method               :   Required (str) - Either "mal" or "import" - required to upload annotations (otherwise leave as "")
+        mask_method                 :   Optional (str) - Specifies your input mask data format
+                                            - "url" means your mask is an accessible URL (must provide color)
+                                            - "array" means your mask is a numpy array (must provide color)
+                                            - "png" means your mask value is a png-string                 
         divider                     :   Required (str) - String delimiter for all name keys generated
         verbose                     :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
         extra_client                :   Ignore this value - necessary for other labelbase integrations                
@@ -101,7 +105,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
             futures.append(exc.submit(
                 create_upload, row_dict, row_data_col, global_key_col, external_id_col, dataset_id_col, dataset_id,
                 project_id_col, project_id, metadata_index, attachment_index, annotation_index, 
-                project_id_to_ontology_index, metadata_name_key_to_schema, upload_method, divider, verbose 
+                project_id_to_ontology_index, metadata_name_key_to_schema, upload_method, mask_method, divider, verbose 
             ))
         for f in as_completed(futures):
             res = f.result()
@@ -120,7 +124,7 @@ def create_upload(row_dict:dict,
                   project_id_col:str, project_id:str,
                   metadata_index:dict, attachment_index:dict, annotation_index:dict, 
                   project_id_to_ontology_index:dict, metadata_name_key_to_schema:dict,
-                  upload_method:str, divider:str, verbose:bool):
+                  upload_method:str, mask_method:str, divider:str, verbose:bool):
     """ Takes a row as-a-dictinary and returns a dictionary where:
     {
         "data_row" : {
@@ -175,6 +179,7 @@ def create_upload(row_dict:dict,
                     top_level_name=annotation_index[column_name],
                     annotation_inputs=row_dict[column_name],
                     ontology_index=ontology_index,
+                    mask_method=mask_method,
                     divider=divider
                 )
             )
