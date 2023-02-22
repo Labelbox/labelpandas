@@ -29,6 +29,16 @@ You can set up a `labelpandas.Client()`instance, which currently has the followi
 
 - `client.export_to_table()` :  Exports labels (and metadata) from a given Labelbox project and creates a Pandas DataFrame
 
+Set up LabelPandas with the following lines of code:
+
+```
+!pip install labelpandas -q
+import labelpandas as lp
+
+api_key = "" # Insert your Labelbox API key here
+client = lp.Client(api_key)
+```
+
 ## Example Notebooks
 
 ### Importing Data from a CSV
