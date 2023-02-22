@@ -44,9 +44,9 @@ You can set up a `labelpandas.Client()`instance, which currently has the followi
 | Putting it all Together        | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/full-import.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1MTLXL32JFGgXV1btgq-1VkGuu7U9Un_n) |
 ------
 
-### Importing Data from a CSV
+### Exporting Data to a CSV
 
 |            Notebook            |  Github  |    Google Colab   |
 | ------------------------------ | -------- | ----------------- |
-| Exporting Data to a CSV            | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/exports.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bxaWWPYGZnvGfFbHyYAX-pgn6kVMHP7q) |
+| Exporting Data to a CSV            | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/export.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/135zZ3ardJKzZq4nD_ynpwdgwGtpARhht) |
 ------
