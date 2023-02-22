@@ -36,7 +36,7 @@ You can set up a `labelpandas.Client()`instance, which currently has the followi
 |            Notebook            |  Github  |    Google Colab   |
 | ------------------------------ | -------- | ----------------- |
 | Basics: Data Rows from URLs            | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/urls.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bxaWWPYGZnvGfFbHyYAX-pgn6kVMHP7q) |
-| Data Rows from Raw Text (coming soon)        | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/raw-text.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Xg-kn6BaYRLl-F4bMJVVopLmgEyQRTTk) |
+| Data Rows from Raw Text*        | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/raw-text.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Xg-kn6BaYRLl-F4bMJVVopLmgEyQRTTk) |
 | Data Rows from Local Files     | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/local-files.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1oMEenCfGl19MtRfHdCNdsjGxwDqlo085) |
 | Data Rows with Metadata        | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/metadata.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1XSaiJlER0cC0yiekCg1eb9CuQw7lPOTL) |
 | Data Rows with Attachments     | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/attachments.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JuT867kb7ZwbaYYJYSRVQYf58-0GjSzf) |
@@ -50,3 +50,5 @@ You can set up a `labelpandas.Client()`instance, which currently has the followi
 | ------------------------------ | -------- | ----------------- |
 | Exporting Data to a CSV            | [![Github](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white)](notebooks/export.ipynb)  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/135zZ3ardJKzZq4nD_ynpwdgwGtpARhht) |
 ------
+
+* = Coming soon
