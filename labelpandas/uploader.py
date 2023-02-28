@@ -116,6 +116,8 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                 "project_id" : res["project_id"],
                 "annotations" : res["annotations"]
             }
+    if verbose:
+        print(f'Upload generated')            
     return upload_dict
 
 def create_upload(row_dict:dict, 
