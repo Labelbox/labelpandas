@@ -19,7 +19,7 @@ Please report any issues/bugs via [Github Issues](https://github.com/Labelbox/la
 ## Requirements
 
 * [Labelbox account](http://app.labelbox.com/)
-* [Generate a Labelbox API key](https://labelbox.com/docs/api/getting-started#create_api_key)
+* [Generate a Labelbox API key](https://docs.labelbox.com/reference/create-api-key)
 
 ## Setup
 
