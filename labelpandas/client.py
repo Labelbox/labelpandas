@@ -92,7 +92,7 @@ class Client():
             divider=divider, verbose=verbose, extra_client=None
         )
         
-        # Iterating over your pandas DataFrame is faster once converted to a list of dictionaries where {key=column_name : value=row_value}
+        # Iterating over your pandas DataFrame is faster once converted to a list of dictionaries where {keys=column_names : value=row_column_values}
         table_dict = table.to_dict('records')
         
         # Determine if we're batching and/or uploading annotations
@@ -112,7 +112,6 @@ class Client():
             # }
         # }
         # This uniforms the upload to use labelbase - Labelbox base code for best practices
-        
         upload_dict = labelpandas.uploader.create_upload_dict(
             client=self.lb_client, table=table, table_dict=table_dict, 
             row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
