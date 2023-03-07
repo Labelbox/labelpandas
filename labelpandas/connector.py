@@ -9,7 +9,7 @@ connector.py holds the following helper functions specific to pandas DataFrames:
 
 """
 import pandas   
-from labelbase.connector import validate_column
+from labelbase.connector import validate_column_name_change
   
 def get_col_names(table:pandas.core.frame.DataFrame, extra_client=None):
     """Grabs all column names from a Pandas DataFrame
@@ -66,6 +66,6 @@ def rename_col(table: pandas.core.frame.DataFrame, col:str, to:str):
         Updated `table` object with renamed column
     """
     existing_cols = get_col_names(table, extra_client=False)
-    validate_column(old_col_name=col, new_col_name=to, existing_col_names=existing_cols)
+    validate_column_name_change(old_col_name=col, new_col_name=to, existing_col_names=existing_cols)
     table = table.rename(columns={col:to})
     return table  
