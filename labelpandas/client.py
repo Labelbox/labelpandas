@@ -1,8 +1,8 @@
 from labelbox import Client as labelboxClient
 from labelbox.schema.dataset import Dataset as labelboxDataset
 from labelpandas.uploader import create_upload_dict
-from labelpandas.connector import validate_columns, determine_actions
 from labelpandas.connector import get_col_names, get_unique_values
+from labelbase.connector import validate_columns, determine_actions
 from labelbase.uploader import create_global_key_to_data_row_dict, batch_create_data_rows, batch_rows_to_project, batch_upload_annotations
 from labelbase.downloader import export_and_flatten_labels
 import pandas as pd
