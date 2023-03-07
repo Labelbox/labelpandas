@@ -33,7 +33,10 @@ This uniforms input formats so that they can leverage labelbase - Labelbox base 
 import pandas
 from labelbox import Client as labelboxClient
 from labelpandas import connector
-import labelbase
+from labelbase.metadata import get_metadata_schema_to_name_key, process_metadata_value
+import labelbase.connector import get_table_length, get_unique_values
+from labelbase.ontology import get_ontology_schema_to_name_path
+from labelbase.annotate import create_ndjsons
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame, table_dict:dict, 
@@ -71,25 +74,25 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
         - errors - List of dictionaries containing conversion error information; see connector.create_data_rows() for more information
     """    
     # Check that global key column is entirely unique values
-    table_length = connector.get_table_length_function(table=table, extra_client=extra_client)
+    table_length = get_table_length(table=table, extra_client=extra_client)
     if verbose:
         print(f'Creating upload list - {table_length} rows in Pandas DataFrame')
-    unique_global_key_count = len(connector.get_unique_values_function(table=table, column_name=global_key_col, extra_client=extra_client))
+    unique_global_key_count = len(get_unique_values(table=table, column_name=global_key_col, extra_client=extra_client))
     if table_length != unique_global_key_count:
         print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row per unique global key")  
     # Get dictionaries where {key=metadata_name_key : value=metadata_schema_id}
-    metadata_name_key_to_schema = labelbase.metadata.get_metadata_schema_to_name_key(client=client, lb_mdo=False, divider=divider, invert=True) 
+    metadata_name_key_to_schema = get_metadata_schema_to_name_key(client=client, lb_mdo=False, divider=divider, invert=True) 
     # Get dictionary where {key=project_id : value=ontology_index} -- index created by labelbase -- if project IDs are available
     if project_id != "":
         project_ids = [project_id]
     elif project_id_col != "":
-        project_ids = connector.get_unique_values_function(table=table, column_name=project_id_col, extra_client=extra_client)
+        project_ids = get_unique_values(table=table, column_name=project_id_col, extra_client=extra_client)
     else:
         project_ids = []
     project_id_to_ontology_index = {}
     if (project_ids!=[]) and (annotation_index!={}) and (upload_method in ["mal", "import"]): # If we're uploading annotations
         for projectId in project_ids:
-            ontology_index = labelbase.ontology.get_ontology_schema_to_name_path(
+            ontology_index = get_ontology_schema_to_name_path(
                 ontology=client.get_project(projectId).ontology(), 
                 divider=divider, invert=True, detailed=True
             )
@@ -98,7 +101,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
     if dataset_id:
         upload_dict = {dataset_id : {}}
     else:
-        upload_dict = {id : {} for id in connector.get_unique_values_function(table=table, column_name=dataset_id_col)}    
+        upload_dict = {id : {} for id in get_unique_values(table=table, column_name=dataset_id_col)}    
     with ThreadPoolExecutor(max_workers=8) as exc:
         futures = []
         for row_dict in table_dict:
@@ -159,7 +162,7 @@ def create_upload(row_dict:dict,
         for metadata_field_name in metadata_index.keys():
             metadata_type = metadata_index[metadata_field_name]
             column_name = f"metadata{divider}{metadata_type}{divider}{metadata_field_name}"
-            input_metadata = labelbase.metadata.process_metadata_value(
+            input_metadata = process_metadata_value(
                 metadata_value=row_dict[column_name], metadata_type=metadata_type, 
                 parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
             )            
@@ -177,7 +180,7 @@ def create_upload(row_dict:dict,
         ontology_index = project_id_to_ontology_index[projectId]
         for column_name in annotation_index.keys():
             annotations.extend(
-                labelbase.annotate.create_ndjsons(
+                create_ndjsons(
                     top_level_name=annotation_index[column_name],
                     annotation_inputs=row_dict[column_name],
                     ontology_index=ontology_index,
