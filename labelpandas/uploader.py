@@ -33,7 +33,7 @@ This uniforms input formats so that they can leverage labelbase - Labelbox base 
 import pandas
 from labelbox import Client as labelboxClient
 from labelbase.metadata import get_metadata_schema_to_name_key, process_metadata_value
-import labelbase.connector import get_table_length, get_unique_values
+from labelbase.connector import get_table_length, get_unique_values
 from labelbase.ontology import get_ontology_schema_to_name_path
 from labelbase.annotate import create_ndjsons
 from concurrent.futures import ThreadPoolExecutor, as_completed
