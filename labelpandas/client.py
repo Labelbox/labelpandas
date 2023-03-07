@@ -1,9 +1,9 @@
 from labelbox import Client as labelboxClient
 from labelbox.schema.dataset import Dataset as labelboxDataset
-import labelpandas
-import labelbase
+import labelpandas.uploader import create_upload_dict
 from labelbase.connector import validate_columns, determine_actions, get_col_names, get_unique_values
 from labelbase.uploader import create_global_key_to_data_row_dict, batch_create_data_rows, batch_rows_to_project, batch_upload_annotations
+from labelbase.downloader import export_and_flatten_labels
 import pandas as pd
 
 
@@ -42,7 +42,7 @@ class Client():
                                             - "png" converts URLs to png byte strings             
             divider                 :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys 
         """
-        flattened_labels_dict = labelbase.downloader.export_and_flatten_labels(
+        flattened_labels_dict = export_and_flatten_labels(
             client=self.lb_client, project=project, 
             include_metadata=include_metadata, include_performance=include_performance, include_agreement=include_agreement,
             mask_method=mask_method, verbose=verbose, divider=divider
@@ -75,16 +75,16 @@ class Client():
             verbose             :   Optional (bool) - If True, prints details about code execution; if False, prints minimal information               
             divider             :   Optional (str) - String delimiter for schema name keys and suffix added to duplocate global keys
         """
-        # Create a metadata_index, attachment_index, and annotation_index
-        # row_data_col      : column with name "row_data"
-        # global_key_col    : column with name "global_key" - defaults to row_data_col
-        # external_id_col   : column with name "external_id" - defaults to global_key_col
-        # project_id_col    : column with name "project_id" - defaults to "" (requires project_id input argument if no "project_id" column exists)
-        # dataset_id_col    : column with name "dataset_id" - defaults to "" (requires project_id input argument if no "dataset_id" column exists)        
-        # external_id_col   : column with name "external_id" - defaults to global_key_col        
-        # metadata_index    : Dictonary where {key=metadata_field_name : value=metadata_type}
-        # attachment_index  : Dictonary where {key=column_name : value=attachment_type}
-        # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name}
+        # Create/identify the following values:
+            # row_data_col      : column with name "row_data"
+            # global_key_col    : column with name "global_key" - defaults to row_data_col
+            # external_id_col   : column with name "external_id" - defaults to global_key_col
+            # project_id_col    : column with name "project_id" - defaults to ""
+            # dataset_id_col    : column with name "dataset_id" - defaults to ""
+            # external_id_col   : column with name "external_id" - defaults to global_key_col        
+            # metadata_index    : Dictonary where {key=metadata_field_name : value=metadata_type} - defaults to {}
+            # attachment_index  : Dictonary where {key=column_name : value=attachment_type} - defaults to {}
+            # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name} - defaults to {}
         row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = validate_columns(
             client=self.lb_client, table=table,
             get_columns_function=get_col_names,
@@ -112,7 +112,7 @@ class Client():
             # }
         # }
         # This uniforms the upload to use labelbase - Labelbox base code for best practices
-        upload_dict = labelpandas.uploader.create_upload_dict(
+        upload_dict = create_upload_dict(
             client=self.lb_client, table=table, table_dict=table_dict, 
             row_data_col=row_data_col, global_key_col=global_key_col, external_id_col=external_id_col, 
             dataset_id_col=dataset_id_col, dataset_id=dataset_id, 
