@@ -35,7 +35,7 @@ client = lp.Client(api_key)
 
 Once set up, you can run the following core functions:
 
-- `client.create_data_rows_from_table()` :   Creates Labelbox data rows (and metadata) given a Pandas table ([example notebook](https://github.com/Labelbox/labelpandas/blob/main/notebooks/create_data_rows_example.ipynb))
+- `client.create_data_rows_from_table()` :   Creates Labelbox data rows (and metadata) given a Pandas table
 
 - `client.export_to_table()` :  Exports labels (and metadata) from a given Labelbox project and creates a Pandas DataFrame
 
