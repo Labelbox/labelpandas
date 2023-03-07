@@ -2,6 +2,8 @@ from labelbox import Client as labelboxClient
 from labelbox.schema.dataset import Dataset as labelboxDataset
 import labelpandas
 import labelbase
+from labelbase.connector import validate_columns, determine_actions, get_col_names, get_unique_values
+from labelbase.uploader import create_global_key_to_data_row_dict, batch_create_data_rows, batch_rows_to_project, batch_upload_annotations
 import pandas as pd
 
 
@@ -83,24 +85,22 @@ class Client():
         # metadata_index    : Dictonary where {key=metadata_field_name : value=metadata_type}
         # attachment_index  : Dictonary where {key=column_name : value=attachment_type}
         # annotation_index  : Dictonary where {key=column_name : value=top_level_feature_name}
-        row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = labelbase.connector.validate_columns(
-            client=self.lb_client,
-            table=table,
-            get_columns_function=labelpandas.connector.get_columns_function,
-            get_unique_values_function=labelpandas.connector.get_unique_values_function,
-            divider=divider,
-            verbose=verbose,
-            extra_client=None
+        row_data_col, global_key_col, external_id_col, project_id_col, dataset_id_col, metadata_index, attachment_index, annotation_index = validate_columns(
+            client=self.lb_client, table=table,
+            get_columns_function=get_col_names,
+            get_unique_values_function=get_unique_values,
+            divider=divider, verbose=verbose, extra_client=None
         )
         
         # Iterating over your pandas DataFrame is faster once converted to a list of dictionaries where {key=column_name : value=row_value}
         table_dict = table.to_dict('records')
         
-        if (dataset_id_col=="") and (dataset_id==""):
-            raise ValueError(f"To create data rows, please provide either a `dataset_id` column or a Labelbox dataset id to argument `dataset_id`")
-        
-        if (upload_method!="") and (project_id_col=="") and (project_id=="") and (annotation_index!={}):
-            raise ValueError(f"To upload annotations, please provide either a `project_id` column or a Lablebox project id to argument `project_id`")
+        # Determine if we're batching and/or uploading annotations
+        batch_action, annotate_action = determine_actions(
+            dataset_id=dataset_id, dataset_id_col=dataset_id_col, 
+            project_id=project_id, project_id_col=project_id_col, 
+            upload_method=upload_method, annotation_index=annotation_index
+        )
         
         # Create an upload dictionary where {
             # dataset_id : {
@@ -123,29 +123,23 @@ class Client():
         )      
                 
         # Upload your data rows to Labelbox - update upload_dict if global keys are modified during upload
-        data_row_upload_results, upload_dict = labelbase.uploader.batch_create_data_rows(
+        data_row_upload_results, upload_dict = batch_create_data_rows(
             client=self.lb_client, upload_dict=upload_dict, 
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
         # Bath to project attempt
-        try:
-            # If project ids are provided, we can batch data rows to projects
-            if project_id or project_id_col:
-                batch = True
+        if batch_action: 
+            try:
                 # Create a dictionary where {key=global_key : value=data_row_id}
                 global_keys_list = []
                 for dataset_id in upload_dict.keys():
                     for global_key in upload_dict[dataset_id].keys():
                         global_keys_list.append(global_key)
-                global_key_to_data_row_id = labelbase.uploader.create_global_key_to_data_row_dict(
+                global_key_to_data_row_id = create_global_key_to_data_row_dict(
                     client=self.lb_client, global_keys=global_keys_list
-                )          
-                # Create a batch dictionary where {key=project_id : value=list_of_data_row_ids}      
-                # Create an upload dictionary where {
-                    # project_id : [list_of_data_row_ids]
-                # }
-                # This uniforms batches to use labelbase - Labelbox base code for best practices                
+                )     
+                # Create batch dictionary where {key=project_id : value=[data_row_ids]}   
                 project_id_to_batch_dict = {}                
                 for dataset_id in upload_dict:
                     for global_key in upload_dict[dataset_id].keys():                    
@@ -153,31 +147,26 @@ class Client():
                         if project_id:
                             if project_id not in project_id_to_batch_dict.keys():
                                 project_id_to_batch_dict[project_id] = []
-                            data_row_id = global_key_to_data_row_id[global_key]                                
-                            project_id_to_batch_dict[project_id].append(data_row_id)
-                # Batch data rows to projects
-                batch_to_project_results = labelbase.uploader.batch_rows_to_project(
-                    client=self.lb_client, project_id_to_batch_dict=project_id_to_batch_dict, priority=priority, verbose=verbose
+                            project_id_to_batch_dict[project_id].append(global_key_to_data_row_id[global_key])
+                # Labelbase command to batch data rows to projects
+                batch_to_project_results = batch_rows_to_project(
+                    client=self.lb_client, project_id_to_batch_dict=project_id_to_batch_dict, 
+                    priority=priority, verbose=verbose
                 )
-            else:
-                batch = "Data rows were not batched to any projects"                
-                batch_to_project_results = []
-        except Exception as e:
-            batch = False
-            batch_to_project_results = e
+            except Exception as e:
+                annotate_action = False
+                batch_to_project_results = e
+        else:
+            batch_to_project_results = []                
         
         # Annotation upload attempt
-        try: # If we batched successfully and an upload_method was provided, upload annotations
-            if (batch==True) and (upload_method in ["mal", "import"]) and (annotation_index!={}):
-                # Create a dictionary where {
-                    # project_id : [list_of_annotation_ndjsons]
-                # }
-                # This uniforms the upload to use labelbase - Labelbox base code for best practices                  
+        if annotate_action:
+            try:               
+                # Create batch dictionary where {key=project_id : value=[data_row_ids]}
                 project_id_to_upload_dict = {}
                 for dataset_id in upload_dict.keys():
                     for global_key in upload_dict[dataset_id].keys():
                         project_id = upload_dict[dataset_id][global_key]["project_id"]
-                        # Remember - the annotation list generated earlier doesn't have data row IDs, so here we add them in
                         annotations_no_data_row_id = upload_dict[dataset_id][global_key]["annotations"]
                         if project_id not in project_id_to_upload_dict.keys():
                             project_id_to_upload_dict[project_id] = []
@@ -186,14 +175,14 @@ class Client():
                                 annotation_data_row_id = annotation
                                 annotation_data_row_id["dataRow"] = {"id" : global_key_to_data_row_id[global_key]}
                                 project_id_to_upload_dict[project_id].append(annotation_data_row_id)
-                # Upload your annotations to Labelbox
-                annotation_upload_results = labelbase.uploader.batch_upload_annotations(
+                # Labelbase command to upload annotations to projects
+                annotation_upload_results = batch_upload_annotations(
                     client=self.lb_client, project_id_to_upload_dict=project_id_to_upload_dict, how=upload_method, verbose=verbose
                 )
-            else:
-                annotation_upload_results = "No annotation upload attempted"
-        except Exception as e:
-            annotation_upload_results = e
+            except Exception as e:
+                annotation_upload_results = e
+        else:
+            annotation_upload_results = []              
             
         return {
             "data_row_upload_results" : data_row_upload_results, 
