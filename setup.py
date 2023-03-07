@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='labelpandas',
-    version='0.1.31',
+    version='0.1.32',
     author='Labelbox',
     author_email="raphael@labelbox.com",
     description='Labelbox Connector for Pandas',
