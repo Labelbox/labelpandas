@@ -1,6 +1,6 @@
 from labelpandas import Client as lpClient
 from tqdm import tqdm
-from labelpandas import connector
+from labelpandas.connector import get_col_names, get_table_length
 import pandas
 
 def load_local_files(client:lpClient, table:pandas.core.frame.DataFrame, file_path_column: str, verbose=False):
@@ -13,13 +13,13 @@ def load_local_files(client:lpClient, table:pandas.core.frame.DataFrame, file_pa
     Returns:
         table with new `row_data` column which has urls to-be-used as row data in creating Labelbox data rows
     """
-    existing_cols = connector.get_columns_function(table=table, extra_client=None)
+    existing_cols = get_col_names(table=table, extra_client=None)
     if "row_data" in existing_cols:
         print(f"Warning - column with name `row_data` already exists - renaming this column to `old_row_data` and creating a new `row_data` column with URL values to-be-used in creating Labelbox data rows")
         table = table.rename(columns={"row_data":"old_row_data"})
     url_column = []
     if verbose:
-        table_length = connector.get_table_length_function(table=table, extra_client=None)
+        table_length = get_table_length(table=table, extra_client=None)
         print(f"Creating URLs for {table_length} local files...")
         for file_path in tqdm(table[file_path_column]):
             url_column.append(client.lb_client.upload_file(file_path))
