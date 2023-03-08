@@ -76,7 +76,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
     table_length = get_table_length(table=table, extra_client=extra_client)
     if verbose:
         print(f'Creating upload list - {table_length} rows in Pandas DataFrame')
-    unique_global_key_count = len(get_unique_values(table=table, column_name=global_key_col, extra_client=extra_client))
+    unique_global_key_count = len(get_unique_values(table=table, col=global_key_col, extra_client=extra_client))
     if table_length != unique_global_key_count:
         print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row per unique global key")  
     # Get dictionaries where {key=metadata_name_key : value=metadata_schema_id}
@@ -85,7 +85,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
     if project_id != "":
         project_ids = [project_id]
     elif project_id_col != "":
-        project_ids = get_unique_values(table=table, column_name=project_id_col, extra_client=extra_client)
+        project_ids = get_unique_values(table=table, col=project_id_col, extra_client=extra_client)
     else:
         project_ids = []
     project_id_to_ontology_index = {}
@@ -100,7 +100,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
     if dataset_id:
         upload_dict = {dataset_id : {}}
     else:
-        upload_dict = {id : {} for id in get_unique_values(table=table, column_name=dataset_id_col)}    
+        upload_dict = {id : {} for id in get_unique_values(table=table, col=dataset_id_col)}    
     with ThreadPoolExecutor(max_workers=8) as exc:
         futures = []
         for row_dict in table_dict:
