@@ -1,5 +1,4 @@
 from labelbox import Client as labelboxClient
-from labelbox.schema.dataset import Dataset as labelboxDataset
 from labelpandas.uploader import create_upload_dict
 from labelpandas.connector import get_col_names, get_unique_values
 from labelbase.connector import validate_columns, determine_actions
