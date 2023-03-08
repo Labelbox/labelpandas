@@ -68,9 +68,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
         verbose                     :   Required (bool) - If True, prints details about code execution; if False, prints minimal information
         extra_client                :   Ignore this value - necessary for other labelbase integrations                
     Returns:
-        Two values:
-        - global_key_to_upload_dict - Dictionary where {key=global_key : value=data row dictionary in upload format}
-        - errors - List of dictionaries containing conversion error information; see connector.create_data_rows() for more information
+        - global_key_to_upload_dict - Dictionary in the above format
     """    
     # Check that global key column is entirely unique values
     table_length = get_table_length(table=table, extra_client=extra_client)
@@ -129,14 +127,14 @@ def create_upload(row_dict:dict,
                   metadata_index:dict, attachment_index:dict, annotation_index:dict, 
                   project_id_to_ontology_index:dict, metadata_name_key_to_schema:dict,
                   upload_method:str, mask_method:str, divider:str, verbose:bool):
-    """ Takes a row as-a-dictinary and returns a dictionary where:
+    """ Takes a single table row as-a-dictinary and returns a dictionary where:
     {
         "data_row" : {
-            "global_key" : "",
-            "row_data" : "",
-            "external_id" : "",
-            "metadata_fields" : [],
-            "attachments" : []
+            "global_key" : "",                    |
+            "row_data" : "",                      |
+            "external_id" : "",                   | ---- This is your data row upload as a dictionary
+            "metadata_fields" : [],               |
+            "attachments" : []                    |
         }, -- This is your data row upload as a dictionary
         "dataset_id" : "" -- This is the dataset ID to upload this data row to
         "project_id" : "", -- This batches data rows to projects, if applicable
