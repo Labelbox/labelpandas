@@ -1,9 +1,9 @@
-import setuptools
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name='labelpandas',
     version='0.1.32',
     author='Labelbox',
@@ -12,6 +12,6 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",    
     url='https://github.com/Labelbox/labelpandas',    
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
     install_requires=["labelbox[data]", "labelbase", "packaging"]
 )
