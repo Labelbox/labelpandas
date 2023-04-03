@@ -31,7 +31,7 @@ def get_unique_values(table:pandas.core.frame.DataFrame, col:str, extra_client=N
     Returns:
         List of strings corresponding to all unique values in a column
     """    
-    return list(table[column_name].unique())
+    return list(table[col].unique())
 
 def add_col(table:pandas.core.frame.DataFrame, col:str, default="", extra_client=None):
     """ Adds a column of empty values to an existing Pandas DataFrame
@@ -43,7 +43,7 @@ def add_col(table:pandas.core.frame.DataFrame, col:str, default="", extra_client
     Returns:
         Your table with a new column given the column name and default value
     """
-    table[column_name] = default_value
+    table[col] = default_value
     return table
 
 def get_table_length(table:pandas.core.frame.DataFrame, extra_client=None):
