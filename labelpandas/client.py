@@ -112,7 +112,7 @@ class Client():
         # {
             # global_key : {
                 # "data_row" : {}, -- This is your data row upload as a dictionary
-                # "dataset_id" : "" -- This is the dataset a global_key should go to (or belongs to)
+                # "dataset_id" : "", -- This is the dataset a global_key should go to (or belongs to)
                 # "project_id" : "", -- This batches data rows to projects, if applicable
                 # "annotations" : [], -- List of annotations for a given data row, if applicable
                 # "model_run_id" : "", -- This adds data rows to model runs, if applicable
