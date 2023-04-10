@@ -256,7 +256,7 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
     if prediction_action:
         ontology_index = model_run_id_to_ontology_index[modelRunId]
         for column_name in prediction_index.keys():
-            annotations.extend(
+            predictions.extend(
                 create_prediction_ndjsons(
                     top_level_name=prediction_index[column_name],
                     annotation_inputs=row_dict[column_name],
