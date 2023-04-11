@@ -145,7 +145,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                 model_id_col, model_id, model_run_id_col, model_run_id,
                 metadata_index, attachment_index, annotation_index, prediction_index,
                 project_id_to_ontology_index, model_run_id_to_ontology_index, model_id_to_model_run_id,
-                annotate_action, prediction_action,
+                create_action, annotate_action, prediction_action,
                 metadata_name_key_to_schema, upload_method, mask_method, divider, verbose 
             ))
         for f in as_completed(futures):
@@ -168,7 +168,7 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
                   model_id_col:str, model_id:str, model_run_id_col:str, model_run_id:str,
                   metadata_index:dict, attachment_index:dict, annotation_index:dict, prediction_index:dict,
                   project_id_to_ontology_index:dict, model_run_id_to_ontology_index:dict, model_id_to_model_run_id:dict, 
-                  annotate_action:bool, prediction_action:bool,
+                  create_action:bool, annotate_action:bool, prediction_action:bool,
                   metadata_name_key_to_schema:dict, upload_method:str, mask_method:str, 
                   divider:str, verbose:bool):
     """ Takes a single table row as-a-dictinary and returns a dictionary where:
