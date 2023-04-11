@@ -77,8 +77,6 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
         print(f'Creating upload list - {table_length} rows in Pandas DataFrame')
     # Get your global keys
     global_keys = get_unique_values(table=table, col=global_key_col, extra_client=extra_client)    
-    # Your upload dict keys are all your dataset IDs
-    upload_dict = {gk : {} for gk in global_keys}
     if table_length != len(global_keys):
         print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row per unique global key")  
     # Get dictionaries where {key=metadata_name_key : value=metadata_schema_id}
@@ -131,11 +129,11 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
         for model_id in model_id_to_model_run_id.keys():
             model_run_id = model_id_to_model_run_id[model_id]
             ontology_index = get_ontology_schema_to_name_path(
-                ontology=client.get_model(model_id).ontology(), 
-                divider=divider, invert=True, detailed=True
+                ontology=client.get_model(model_id).ontology(), divider=divider, invert=True, detailed=True
             )
             model_run_id_to_ontology_index[model_run_id] = ontology_index     
     # Multithread creating upload_dict global_key dictionaries
+    upload_dict = {}
     with ThreadPoolExecutor(max_workers=8) as exc:
         futures = []
         for row_dict in table_dict:
@@ -150,10 +148,10 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
             ))
         for f in as_completed(futures):
             res = f.result()
-            dataRow = res["data_row"]
-            global_key = str(dataRow["global_key"])
+            print(res)
+            global_key = str(res["data_row"]["global_key"])
             upload_dict[global_key] = {
-                "data_row" : dataRow,
+                "data_row" : res["data_row"],
                 "project_id" : res["project_id"],
                 "annotations" : res["annotations"],
                 "model_run_id" : res["model_run_id"],
