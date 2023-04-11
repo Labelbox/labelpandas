@@ -322,3 +322,16 @@ class Client():
         else:
             data_row_to_model_run_results = []
             prediction_upload_results = []  
+
+        return_payload = {
+            "batch_to_project_results" : batch_to_project_results,
+            "annotation_upload_results" : annotation_upload_results,
+            "ground_truth_upload_results" : ground_truth_upload_results,
+            "data_row_to_model_run_results" : data_row_to_model_run_results,
+            "prediction_upload_results" : prediction_upload_results
+        }             
+
+        return_payload = {k: v for k, v in return_payload.items() if v}
+            
+        return return_payload        
+    
