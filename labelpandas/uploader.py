@@ -78,7 +78,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
     # Get your global keys
     global_keys = get_unique_values(table=table, col=global_key_col, extra_client=extra_client)    
     # Your upload dict keys are all your dataset IDs
-    upload_dict = {gk : {} for gk in global_keys)}
+    upload_dict = {gk : {} for gk in global_keys}
     if table_length != len(global_keys):
         print(f"Warning: Your global key column is not unique - upload will resume, only uploading 1 data row per unique global key")  
     # Get dictionaries where {key=metadata_name_key : value=metadata_schema_id}
