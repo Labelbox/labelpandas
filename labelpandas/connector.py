@@ -55,17 +55,3 @@ def get_table_length(table:pandas.core.frame.DataFrame, extra_client=None):
         The length of your table as an integer
     """  
     return len(table)
-
-def rename_col(table: pandas.core.frame.DataFrame, col:str, to:str):
-    """ Renames columns into the Labelpandas format    
-    Args:
-        table           :   Required (pandas.core.frame.DataFrame) - Pandas DataFrame
-        col             :   Required (str) - Existing column name to-be-changed
-        to              :   Required (str) - What to rename the column as       
-    Returns:
-        Updated `table` object with renamed column
-    """
-    existing_cols = get_col_names(table, extra_client=False)
-    validate_column_name_change(old_col_name=col, new_col_name=to, existing_col_names=existing_cols)
-    table = table.rename(columns={col:to})
-    return table  
