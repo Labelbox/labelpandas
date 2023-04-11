@@ -268,7 +268,7 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         "data_row" : data_row,
         "project_id" : projectId,
         "dataset_id" : datasetId,
-        "annotations" : annotations
+        "annotations" : annotations,
         "model_run_id" : modelRunId,
         "predictions" : predictions
     }
