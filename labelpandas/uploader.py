@@ -158,7 +158,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                 "predictions" : res["predictions"]
             }
     if verbose:
-        print(f'Upload generated')            
+        print(f'Upload generated')  
     return upload_dict
 
 def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_id_col:str, 
