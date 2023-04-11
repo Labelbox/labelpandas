@@ -9,7 +9,6 @@ connector.py holds the following helper functions specific to pandas DataFrames:
 
 """
 import pandas   
-from labelbase.connector import validate_column_name_change
   
 def get_col_names(table:pandas.core.frame.DataFrame, extra_client=None):
     """Grabs all column names from a Pandas DataFrame
