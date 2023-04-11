@@ -100,7 +100,7 @@ class Client():
             # attachment_index            :   Dictonary where {key=column_name : value=attachment_type} or {} if not uploading attachments
             # annotation_index            :   Dictonary where {key=column_name : value=top_level_class_name} or {} if not uploading annotations
             # prediction_index            :   Dictonary where {key=column_name : value=top_level_class_name} or {}  if not uploading predictions
-        x = validate_colums(
+        x = validate_columns(
             client=self.lb_client, table=table,
             get_columns_function=connector.get_col_names,
             get_unique_values_function=connector.get_unique_values,
@@ -248,7 +248,7 @@ class Client():
             # attachment_index            :   Dictonary where {key=column_name : value=attachment_type} or {} if not uploading attachments
             # annotation_index            :   Dictonary where {key=column_name : value=top_level_class_name} or {} if not uploading annotations
             # prediction_index            :   Dictonary where {key=column_name : value=top_level_class_name} or {}  if not uploading predictions
-        x = validate_colums(
+        x = validate_columns(
             client=self.lb_client, table=table,
             get_columns_function=connector.get_col_names,
             get_unique_values_function=connector.get_unique_values,
