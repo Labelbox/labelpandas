@@ -140,8 +140,9 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
         futures = []
         for row_dict in table_dict:
             futures.append(exc.submit(
-                create_upload, row_dict, row_data_col, global_key_col, external_id_col, dataset_id_col, dataset_id,
-                project_id_col, project_id, model_id_col, model_id, model_run_id_col, model_run_id,
+                create_upload, row_dict, row_data_col, global_key_col, external_id_col, 
+                dataset_id_col, dataset_id, project_id_col, project_id, 
+                model_id_col, model_id, model_run_id_col, model_run_id,
                 metadata_index, attachment_index, annotation_index, prediction_index,
                 project_id_to_ontology_index, model_run_id_to_ontology_index, model_id_to_model_run_id,
                 annotate_action, prediction_action,
@@ -165,9 +166,9 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
 def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_id_col:str, 
                   dataset_id_col:str, dataset_id:str, project_id_col:str, project_id:str,
                   model_id_col:str, model_id:str, model_run_id_col:str, model_run_id:str,
-                  metadata_index:dict, attachment_index:dict, annotation_index:dict, 
-                  project_id_to_ontology_index:dict, model_run_id_to_ontology_index:dict, 
-                  model_id_to_model_run_id:dict, annotate_action:bool, prediction_action,
+                  metadata_index:dict, attachment_index:dict, annotation_index:dict, prediction_index:dict,
+                  project_id_to_ontology_index:dict, model_run_id_to_ontology_index:dict, model_id_to_model_run_id:dict, 
+                  annotate_action:bool, prediction_action:bool,
                   metadata_name_key_to_schema:dict, upload_method:str, mask_method:str, 
                   divider:str, verbose:bool):
     """ Takes a single table row as-a-dictinary and returns a dictionary where:
