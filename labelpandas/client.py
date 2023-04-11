@@ -153,10 +153,18 @@ class Client():
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
+        # If performing actions that require data row IDs, we pull them here
+        if actions["batch"] or actions["annotate"] or actions["prediction"]:
+            global_key_to_data_row_id = uploader.create_global_key_to_data_row_id_dict(
+                client=self.lb_client, global_keys=list(upload_dict.keys())
+            )
+        
         # Bath to project attempt using labelbase.uploader.batch_rows_to_project
         if actions["batch"]:         
             batch_to_project_results = batch_rows_to_project(
-                client=self.lb_client, upload_dict=upload_dict, priority=priority, verbose=verbose
+                client=self.lb_client, upload_dict=upload_dict, 
+                global_key_to_data_row_id=global_key_to_data_row_id,
+                priority=priority, verbose=verbose
             )                
         else:
             batch_to_project_results = []
@@ -164,7 +172,9 @@ class Client():
         # Annotation upload attempt using labelbase.uploader.batch_upload_annotations
         if actions["annotate"]:
             annotation_upload_results = batch_upload_annotations(
-                client=self.lb_client, upload_dict=upload_dict, how=actions["annotate"], verbose=verbose
+                client=self.lb_client, upload_dict=upload_dict, 
+                global_key_to_data_row_id=global_key_to_data_row_id,
+                how=actions["annotate"], verbose=verbose
             )
         else:
             annotation_upload_results = []
@@ -182,10 +192,11 @@ class Client():
             # If data rows aren't in the model run yet, add them with labelbase.uploader.batch_add_data_rows_to_model_run
             if not ground_truth_upload_results:
                 data_row_to_model_run_results = batch_add_data_rows_to_model_run(
-                    client=self.lb_client, upload_dict=upload_dict                    
+                    client=self.lb_client, upload_dict=upload_dict
                 )
             prediction_upload_results = batch_upload_predictions(
-                client=self.lb_client, upload_dict=upload_dict
+                client=self.lb_client, upload_dict=upload_dict,
+                global_key_to_data_row_id=global_key_to_data_row_id
             )
         else:
             data_row_to_model_run_results = []
