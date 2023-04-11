@@ -153,23 +153,22 @@ class Client():
             skip_duplicates=skip_duplicates, divider=divider, verbose=verbose
         )
         
-        # If performing actions that require data row IDs, we pull them here using labelbase.uploader.create_global_key_to_data_row_id_dict
-        if actions["batch"] or actions["annotate"] or actions["prediction"]:
-            all_global_keys = list(upload_dict.keys())
-            print(all_global_keys)
-            global_key_to_data_row_id = create_global_key_to_data_row_id_dict(
-                client=self.lb_client, global_keys=all_global_keys
-            )
-        
         # Bath to project attempt using labelbase.uploader.batch_rows_to_project
         if actions["batch"]:         
             batch_to_project_results = batch_rows_to_project(
                 client=self.lb_client, upload_dict=upload_dict, 
-                global_key_to_data_row_id=global_key_to_data_row_id,
                 priority=priority, verbose=verbose
             )                
         else:
             batch_to_project_results = []
+            
+        # If performing actions that require data row IDs, we pull them here using labelbase.uploader.create_global_key_to_data_row_id_dict
+        if actions["annotate"] or actions["prediction"]:
+            all_global_keys = list(upload_dict.keys())
+            print(all_global_keys)
+            global_key_to_data_row_id = create_global_key_to_data_row_id_dict(
+                client=self.lb_client, global_keys=all_global_keys
+            )            
         
         # Annotation upload attempt using labelbase.uploader.batch_upload_annotations
         if actions["annotate"]:
