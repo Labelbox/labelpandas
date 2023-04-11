@@ -148,7 +148,6 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
             ))
         for f in as_completed(futures):
             res = f.result()
-            print(res)
             global_key = str(res["data_row"]["global_key"])
             upload_dict[global_key] = {
                 "data_row" : res["data_row"],
