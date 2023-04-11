@@ -33,12 +33,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame, table_dict:dict, 
                        row_data_col:str, global_key_col:str, external_id_col:str, 
-                       dataset_id_col:str, dataset_id:str,
-                       project_id_col:str, project_id:str,
-                       model_id_col:str, model_id:str,
-                       model_run_id_col:str, model_run_id:str,
+                       dataset_id_col:str, dataset_id:str, project_id_col:str, project_id:str,
+                       model_id_col:str, model_id:str, model_run_id_col:str, model_run_id:str,
                        metadata_index:dict, attachment_index:dict, annotation_index:dict, prediction_index:dict,
-                       annotate_action, prediction_action,
+                       create_action, annotate_action, prediction_action,
                        upload_method:str, mask_method:str, divider:str, verbose:bool, extra_client:bool=None):
     """
     Args:
@@ -60,7 +58,8 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
         attachment_index            :   Required (dict) - Dictonary where {key=column_name : value=attachment_type}
         annotation_index            :   Required (dict) - Dictonary where {key=column_name : value=top_level_feature_name}
         prediction_index            :   Required (dict) - Dictonary where {key=column_name : value=top_level_feature_name}
-        annotate_action             :   Required (bool) - If True, creates "annotations" key in the upload_dict
+        create_action               :   Required (bool) - If True, creates "data_row" key in upload_dict
+        annotate_action             :   Required (str) - If any value, creates "annotations" key in the upload_dict
         prediction_action           :   Required (bool) - If True, creates "predictions" key in the upload_dict
         mask_method                 :   Optional (str) - Specifies your input mask data format
                                             - "url" means your mask is an accessible URL (must provide color)
@@ -212,31 +211,31 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         model_id = row_dict[model_id_col]                                                                 
         modelRunId = model_id_to_model_run_id[model_id]
     else:
-        modelRunId = ""        
-    # Create a base data row dictionary
-    data_row = {
-        "row_data" : row_dict[row_data_col],
-        "global_key" : row_dict[global_key_col],
-        "external_id" : row_dict[external_id_col],
-    }
-    # Create a list of metadata for a data row    
-    metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "LabelPandas"}]
-    if metadata_index:
-        for metadata_field_name in metadata_index.keys():
-            metadata_type = metadata_index[metadata_field_name]
-            column_name = f"metadata{divider}{metadata_type}{divider}{metadata_field_name}"
-            input_metadata = process_metadata_value(
-                metadata_value=row_dict[column_name], metadata_type=metadata_type, 
-                parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
-            )            
-            if input_metadata:
-                metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
-            else:
-                continue        
-    data_row["metadata_fields"] = metadata_fields  
-    # Create a list of attachments for a data row
-    if attachment_index:
-        data_row["attachments"] = [{"type" : attachment_index[column_name], "value" : row_dict[column_name]} for column_name in attachment_index]
+        modelRunId = ""   
+    # Create a base data row dictionary     
+    data_row = {}
+    if create_action:    
+        data_row["row_data"] = row_dict[row_data_col],
+        data_row["global_key"] = row_dict[global_key_col],
+        data_row["external_id"] = row_dict[external_id_col]
+        # Create a list of metadata for a data row    
+        metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "LabelPandas"}]
+        if metadata_index:
+            for metadata_field_name in metadata_index.keys():
+                metadata_type = metadata_index[metadata_field_name]
+                column_name = f"metadata{divider}{metadata_type}{divider}{metadata_field_name}"
+                input_metadata = process_metadata_value(
+                    metadata_value=row_dict[column_name], metadata_type=metadata_type, 
+                    parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
+                )            
+                if input_metadata:
+                    metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
+                else:
+                    continue        
+        data_row["metadata_fields"] = metadata_fields  
+        # Create a list of attachments for a data row
+        if attachment_index:
+            data_row["attachments"] = [{"type" : attachment_index[column_name], "value" : row_dict[column_name]} for column_name in attachment_index]
     # Create a list of annotation ndjsons for a data row (does not include data row ID since data row has not been created)
     annotations = []        
     if annotate_action:
