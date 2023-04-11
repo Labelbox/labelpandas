@@ -152,6 +152,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
             global_key = str(res["data_row"]["global_key"])
             upload_dict[global_key] = {
                 "data_row" : res["data_row"],
+                "dataset_id" : res["dataset_id"],
                 "project_id" : res["project_id"],
                 "annotations" : res["annotations"],
                 "model_run_id" : res["model_run_id"],
