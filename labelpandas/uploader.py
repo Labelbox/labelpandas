@@ -28,7 +28,7 @@ from labelpandas.connector import get_table_length, get_unique_values
 from labelbase.metadata import get_metadata_schema_to_name_key, process_metadata_value
 from labelbase.ontology import get_ontology_schema_to_name_path
 from labelbase.models import create_model_run_with_name
-from labelbase.annotate import create_ndjsons, create_prediction_ndjsons
+from labelbase.annotate import create_ndjsons
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame, table_dict:dict, 
@@ -246,6 +246,7 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
                     top_level_name=annotation_index[column_name],
                     annotation_inputs=row_dict[column_name],
                     ontology_index=ontology_index,
+                    confidence=False,
                     mask_method=mask_method,
                     divider=divider
                 )
@@ -256,10 +257,11 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         ontology_index = model_run_id_to_ontology_index[modelRunId]
         for column_name in prediction_index.keys():
             predictions.extend(
-                create_prediction_ndjsons(
+                create_ndjsons(
                     top_level_name=prediction_index[column_name],
                     annotation_inputs=row_dict[column_name],
                     ontology_index=ontology_index,
+                    confidence=True,
                     mask_method=mask_method,
                     divider=divider
                 )
