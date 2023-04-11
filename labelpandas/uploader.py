@@ -127,7 +127,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                     print(f"Created model_run with name '{model_run.name}' for Labelbox Model with name {model.name}")                
                 model_id_to_model_run_id[model.uid] = model_run.uid
         else:
-            continue                                                   
+            break                                               
         for model_id in model_id_to_model_run_id.keys():
             model_run_id = model_id_to_model_run_id[model_id]
             ontology_index = get_ontology_schema_to_name_path(
