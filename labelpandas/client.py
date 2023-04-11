@@ -146,8 +146,6 @@ class Client():
             create_action=actions["create"], annotate_action=actions["annotate"], prediction_action=actions["predictions"],
             upload_method=upload_method, mask_method=mask_method, divider=divider, verbose=verbose
         )
-        
-        print(upload_dict)
                 
         # Upload your data rows to Labelbox, updating upload_dict if global keys are modified during upload using labelbase.uploader.batch_create_data_rows
         data_row_upload_results, upload_dict = batch_create_data_rows(
