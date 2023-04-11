@@ -137,9 +137,12 @@ class Client():
         upload_dict = uploader.create_upload_dict( # Using labelpandas.uploader.create_upload_dict
             client=self.lb_client, table=table, table_dict=table_dict, 
             row_data_col=x["row_data_col"], global_key_col=x["global_key_col"], external_id_col=x["external_id_col"], 
-            dataset_id_col=x["dataset_id_col"], dataset_id=dataset_id, project_id_col=x["project_id_col"], project_id=project_id,
-            model_id_col=x["model_id_col"], model_id=model_id, model_run_id_col=x["model_run_id_col"], model_run_id=model_run_id,
-            metadata_index=x["metadata_index"], attachment_index=x["attachment_index"], annotation_index=x["annotation_index"],
+            dataset_id_col=x["dataset_id_col"], dataset_id=dataset_id, 
+            project_id_col=x["project_id_col"], project_id=project_id,
+            model_id_col=x["model_id_col"], model_id=model_id, 
+            model_run_id_col=x["model_run_id_col"], model_run_id=model_run_id,
+            metadata_index=x["metadata_index"], attachment_index=x["attachment_index"], 
+            annotation_index=x["annotation_index"], prediction_index=x["prediction_index"], 
             create_action=actions["create"], annotate_action=actions["annotate"], prediction_action=actions["predictions"],
             upload_method=upload_method, mask_method=mask_method, divider=divider, verbose=verbose
         )
@@ -280,9 +283,12 @@ class Client():
         upload_dict = uploader.create_upload_dict( # Using labelpandas.uploader.create_upload_dict
             client=self.lb_client, table=table, table_dict=table_dict, 
             row_data_col=x["row_data_col"], global_key_col=x["global_key_col"], external_id_col=x["external_id_col"], 
-            dataset_id_col=x["dataset_id_col"], dataset_id=dataset_id, project_id_col=x["project_id_col"], project_id=project_id,
-            model_id_col=x["model_id_col"], model_id=model_id, model_run_id_col=x["model_run_id_col"], model_run_id=model_run_id,
-            metadata_index=x["metadata_index"], attachment_index=x["attachment_index"], annotation_index=x["annotation_index"],
+            dataset_id_col=x["dataset_id_col"], dataset_id=dataset_id, 
+            project_id_col=x["project_id_col"], project_id=project_id,
+            model_id_col=x["model_id_col"], model_id=model_id, 
+            model_run_id_col=x["model_run_id_col"], model_run_id=model_run_id,
+            metadata_index=x["metadata_index"], attachment_index=x["attachment_index"], 
+            annotation_index=x["annotation_index"], prediction_index=x["prediction_index"], 
             create_action=actions["create"], annotate_action=actions["annotate"], prediction_action=actions["predictions"],
             upload_method=upload_method, mask_method=mask_method, divider=divider, verbose=verbose
         )
