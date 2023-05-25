@@ -1,17 +1,8 @@
 from labelbox import Client as labelboxClient
-import sys
-sys.path.insert(1, '/Users/luksta/Desktop/Projects/Connectors/labelbox-bigquery')
-sys.path.insert(1, '/Users/luksta/Desktop/Projects')
-sys.path.insert(1, '/Users/luksta/Desktop/Projects/Connectors/labelbase')
-sys.path.insert(1, '/Users/luksta/Desktop/Projects/Connectors/labelpandas')
-# from labelpandas import uploader, connector
-import uploader, connector
+from labelpandas import uploader, connector
 from labelbase.downloader import *
 from labelbase.uploader import *
 from labelbase.connector import *
-# from downloader import *
-# from uploader import *
-# from connector import *
 import pandas as pd
 
 
