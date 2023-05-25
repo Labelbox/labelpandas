@@ -1,8 +1,17 @@
 from labelbox import Client as labelboxClient
-from labelpandas import uploader, connector
+import sys
+sys.path.insert(1, '/Users/luksta/Desktop/Projects/Connectors/labelbox-bigquery')
+sys.path.insert(1, '/Users/luksta/Desktop/Projects')
+sys.path.insert(1, '/Users/luksta/Desktop/Projects/Connectors/labelbase')
+sys.path.insert(1, '/Users/luksta/Desktop/Projects/Connectors/labelpandas')
+# from labelpandas import uploader, connector
+import uploader, connector
 from labelbase.downloader import *
 from labelbase.uploader import *
 from labelbase.connector import *
+# from downloader import *
+# from uploader import *
+# from connector import *
 import pandas as pd
 
 
@@ -25,7 +34,7 @@ class Client():
         self.lb_client = labelboxClient(lb_api_key, endpoint=lb_endpoint, enable_experimental=lb_enable_experimental, app_url=lb_app_url)
            
     def export_to_table(
-        self, project, 
+        self, project, lb_api_key,
         include_metadata:bool=False, include_performance:bool=False, include_agreement:bool=False,
         verbose:bool=False, mask_method:str="png", divider="///"):
         """ Creates a Pandas DataFrame given a Labelbox Projet ID
@@ -45,7 +54,7 @@ class Client():
         flattened_labels_dict = export_and_flatten_labels(
             client=self.lb_client, project=project, include_metadata=include_metadata, 
             include_performance=include_performance, include_agreement=include_agreement,
-            mask_method=mask_method, verbose=verbose, divider=divider
+            mask_method=mask_method, verbose=verbose, divider=divider, lb_api_key=lb_api_key
         )
         # Convert to a Pandas DataFrame
         table = pd.DataFrame.from_dict(flattened_labels_dict)
@@ -229,7 +238,7 @@ class Client():
     #     Returns:
     #         Results from all performed actions in a dictionary - if an expected action has no results, it was not performed
     #     """    
-    def upsert_data_rows_from_table(batch_data_rows:bool=False, anootation_method:str=""):
+    def upsert_data_rows_from_table(self, table:pd.core.frame.DataFrame, dataset_id:str="", batch_data_rows:bool=False, annotation_method:str="", divider:str="///"):
         """ Performs the following actions if proper information is provided:
                 - batches data rows to projects (if batch_data_rows == True) * **
                 - uploads annotations as pre-labels or submitted labels * **
