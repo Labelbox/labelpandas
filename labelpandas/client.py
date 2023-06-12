@@ -25,7 +25,7 @@ class Client():
         self.lb_client = labelboxClient(lb_api_key, endpoint=lb_endpoint, enable_experimental=lb_enable_experimental, app_url=lb_app_url)
            
     def export_to_table(
-        self, project, lb_api_key,
+        self, project,
         include_metadata:bool=False, include_performance:bool=False, include_agreement:bool=False,
         verbose:bool=False, mask_method:str="png", divider="///"):
         """ Creates a Pandas DataFrame given a Labelbox Projet ID
@@ -45,7 +45,7 @@ class Client():
         flattened_labels_dict = export_and_flatten_labels(
             client=self.lb_client, project=project, include_metadata=include_metadata, 
             include_performance=include_performance, include_agreement=include_agreement,
-            mask_method=mask_method, verbose=verbose, divider=divider, lb_api_key=lb_api_key
+            mask_method=mask_method, verbose=verbose, divider=divider
         )
         # Convert to a Pandas DataFrame
         table = pd.DataFrame.from_dict(flattened_labels_dict)
