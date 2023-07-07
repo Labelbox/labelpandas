@@ -36,7 +36,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                        dataset_id_col:str, dataset_id:str, project_id_col:str, project_id:str,
                        model_id_col:str, model_id:str, model_run_id_col:str, model_run_id:str,
                        metadata_index:dict, attachment_index:dict, annotation_index:dict, prediction_index:dict,
-                       create_action, annotate_action, prediction_action,
+                       create_action, annotate_action, prediction_action, batch_action,
                        upload_method:str, mask_method:str, divider:str, verbose:bool, extra_client:bool=None):
     """
     Args:
@@ -96,6 +96,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                 ontology=client.get_project(projectId).ontology(), 
                 divider=divider, invert=True, detailed=True
             )
+            ontology_index['project_type'] = str(client.get_project(projectId).media_type)
             project_id_to_ontology_index[projectId] = ontology_index
     # Get dictionary where {key=model_run_id : value=ontology_index}
     model_run_id_to_ontology_index = {}      
@@ -143,7 +144,7 @@ def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame
                 model_id_col, model_id, model_run_id_col, model_run_id,
                 metadata_index, attachment_index, annotation_index, prediction_index,
                 project_id_to_ontology_index, model_run_id_to_ontology_index, model_id_to_model_run_id,
-                create_action, annotate_action, prediction_action,
+                create_action, annotate_action, prediction_action, batch_action,
                 metadata_name_key_to_schema, upload_method, mask_method, divider, verbose 
             ))
         for f in as_completed(futures):
@@ -166,7 +167,7 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
                   model_id_col:str, model_id:str, model_run_id_col:str, model_run_id:str,
                   metadata_index:dict, attachment_index:dict, annotation_index:dict, prediction_index:dict,
                   project_id_to_ontology_index:dict, model_run_id_to_ontology_index:dict, model_id_to_model_run_id:dict, 
-                  create_action:bool, annotate_action:bool, prediction_action:bool,
+                  create_action:bool, annotate_action:bool, prediction_action:bool, batch_action:bool,
                   metadata_name_key_to_schema:dict, upload_method:str, mask_method:str, 
                   divider:str, verbose:bool):
     """ Takes a single table row as-a-dictinary and returns a dictionary where:
@@ -213,7 +214,7 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         modelRunId = ""   
     # Create a base data row dictionary     
     data_row = {}
-    if create_action:    
+    if create_action or batch_action:    
         data_row["row_data"] = row_dict[row_data_col]
         data_row["global_key"] = row_dict[global_key_col]
         data_row["external_id"] = row_dict[external_id_col]

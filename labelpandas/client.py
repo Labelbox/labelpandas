@@ -229,7 +229,7 @@ class Client():
     #     Returns:
     #         Results from all performed actions in a dictionary - if an expected action has no results, it was not performed
     #     """    
-    def upsert_data_rows_from_table(self, table:pd.core.frame.DataFrame, dataset_id:str="", batch_data_rows:bool=False, annotation_method:str="", divider:str="///"):
+    def upsert_data_rows_from_table(self, table:pd.core.frame.DataFrame, dataset_id:str="", project_id:str="", model_id:str="", upload_method:str="", mask_method:str="png", priority:int=5, model_run_id:str="", batch_data_rows:bool=False, verbose:bool=False, divider:str="///"):
         """ Performs the following actions if proper information is provided:
                 - batches data rows to projects (if batch_data_rows == True) * **
                 - uploads annotations as pre-labels or submitted labels * **
@@ -273,7 +273,7 @@ class Client():
         actions = determine_actions(
             row_data_col=x["row_data_col"], dataset_id=dataset_id, dataset_id_col=x["dataset_id_col"], project_id=project_id, 
             project_id_col=x["project_id_col"], model_id=model_id, model_id_col=x["model_id_col"], model_run_id=model_run_id, 
-            model_run_id_col=x["model_run_id_col"], upload_method=label_method, metadata_index=x["metadata_index"], 
+            model_run_id_col=x["model_run_id_col"], upload_method=upload_method, metadata_index=x["metadata_index"], 
             attachment_index=x["attachment_index"], annotation_index=x["annotation_index"], prediction_index=x["prediction_index"]
         )
 
@@ -299,7 +299,7 @@ class Client():
             model_run_id_col=x["model_run_id_col"], model_run_id=model_run_id,
             metadata_index=x["metadata_index"], attachment_index=x["attachment_index"], 
             annotation_index=x["annotation_index"], prediction_index=x["prediction_index"], 
-            create_action=actions["create"], annotate_action=actions["annotate"], prediction_action=actions["predictions"],
+            create_action=actions["create"], annotate_action=actions["annotate"], prediction_action=actions["predictions"], batch_action=actions["batch"],
             upload_method=upload_method, mask_method=mask_method, divider=divider, verbose=verbose
         )
 
