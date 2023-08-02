@@ -163,7 +163,7 @@ class Client():
             batch_to_project_results = []
             
         # If performing actions that require data row IDs, we pull them here using labelbase.uploader.create_global_key_to_data_row_id_dict
-        if actions["annotate"] or actions["prediction"]:
+        if actions["annotate"] or actions["predictions"]:
             global_key_to_data_row_id = create_global_key_to_data_row_id_dict(
                 client=self.lb_client, global_keys=list(upload_dict.keys())
             )            
