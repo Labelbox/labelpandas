@@ -224,7 +224,8 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
     if create_action or batch_action:    
         data_row["row_data"] = row_dict[row_data_col]
         data_row["global_key"] = row_dict[global_key_col]
-        data_row["external_id"] = row_dict[external_id_col]
+        if external_id_col in row_dict.keys():
+            data_row["external_id"] = row_dict[external_id_col]
         # Create a list of metadata for a data row    
         metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "LabelPandas"}]
         if metadata_index:
