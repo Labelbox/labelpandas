@@ -187,9 +187,12 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
     }
     """
     #Remove nan values from dictionary
+    nan_keys = []
     for key in row_dict.keys():
         if pandas.isna(row_dict[key]):
-            del row_dict[key]
+            nan_keys.append(key)
+    for key in nan_keys:
+        del row_dict[key]
     # Determine dataset ID
     if dataset_id:
         datasetId = dataset_id
