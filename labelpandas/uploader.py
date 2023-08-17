@@ -231,14 +231,15 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
             for metadata_field_name in metadata_index.keys():
                 metadata_type = metadata_index[metadata_field_name]
                 column_name = f"metadata{divider}{metadata_type}{divider}{metadata_field_name}"
-                input_metadata = process_metadata_value(
-                    metadata_value=row_dict[column_name], metadata_type=metadata_type, 
-                    parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
-                )            
-                if input_metadata:
-                    metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
-                else:
-                    continue        
+                if column_name in row_dict.keys():
+                    input_metadata = process_metadata_value(
+                        metadata_value=row_dict[column_name], metadata_type=metadata_type, 
+                        parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
+                    )            
+                    if input_metadata:
+                        metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
+                    else:
+                        continue        
         data_row["metadata_fields"] = metadata_fields  
         # Create a list of attachments for a data row
         if attachment_index:
