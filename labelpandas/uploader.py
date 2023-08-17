@@ -186,6 +186,10 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         "predictions" : [] -- List of predictions for a given data row, if applicable
     }
     """
+    #Remove nan values from dictionary
+    for key in row_dict.keys():
+        if pandas.isna(row_dict[key]):
+            del row_dict[key]
     # Determine dataset ID
     if dataset_id:
         datasetId = dataset_id
