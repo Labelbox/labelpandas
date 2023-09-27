@@ -30,6 +30,7 @@ from labelbase.ontology import get_ontology_schema_to_name_path
 from labelbase.models import create_model_run_with_name
 from labelbase.annotate import create_ndjsons
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from uuid import uuid4
 
 def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame, table_dict:dict, 
                        row_data_col:str, global_key_col:str, external_id_col:str, 
@@ -186,6 +187,13 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         "predictions" : [] -- List of predictions for a given data row, if applicable
     }
     """
+    #Remove nan values from dictionary
+    nan_keys = []
+    for key in row_dict.keys():
+        if pandas.isna(row_dict[key]):
+            nan_keys.append(key)
+    for key in nan_keys:
+        del row_dict[key]
     # Determine dataset ID
     if dataset_id:
         datasetId = dataset_id
@@ -214,24 +222,31 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         modelRunId = ""   
     # Create a base data row dictionary     
     data_row = {}
-    if create_action or batch_action:    
+    if create_action or batch_action:
         data_row["row_data"] = row_dict[row_data_col]
-        data_row["global_key"] = row_dict[global_key_col]
-        data_row["external_id"] = row_dict[external_id_col]
+        if len(row_dict[global_key_col]) <= 200:
+            data_row["global_key"] = row_dict[global_key_col]
+        else:
+            if verbose:
+                print("Global key too long (>200 characters). Replacing with randomly generated global key.")
+            data_row["global_key"] = str(uuid4())
+        if external_id_col in row_dict.keys():
+            data_row["external_id"] = row_dict[external_id_col]
         # Create a list of metadata for a data row    
         metadata_fields = [{"schema_id" : metadata_name_key_to_schema['lb_integration_source'], "value" : "LabelPandas"}]
         if metadata_index:
             for metadata_field_name in metadata_index.keys():
                 metadata_type = metadata_index[metadata_field_name]
                 column_name = f"metadata{divider}{metadata_type}{divider}{metadata_field_name}"
-                input_metadata = process_metadata_value(
-                    metadata_value=row_dict[column_name], metadata_type=metadata_type, 
-                    parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
-                )            
-                if input_metadata:
-                    metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
-                else:
-                    continue        
+                if column_name in row_dict.keys():
+                    input_metadata = process_metadata_value(
+                        metadata_value=row_dict[column_name], metadata_type=metadata_type, 
+                        parent_name=metadata_field_name, metadata_name_key_to_schema=metadata_name_key_to_schema, divider=divider
+                    )            
+                    if input_metadata:
+                        metadata_fields.append({"schema_id" : metadata_name_key_to_schema[metadata_field_name], "value" : input_metadata})
+                    else:
+                        continue        
         data_row["metadata_fields"] = metadata_fields  
         # Create a list of attachments for a data row
         if attachment_index:
