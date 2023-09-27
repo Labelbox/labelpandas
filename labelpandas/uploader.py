@@ -30,6 +30,7 @@ from labelbase.ontology import get_ontology_schema_to_name_path
 from labelbase.models import create_model_run_with_name
 from labelbase.annotate import create_ndjsons
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from uuid import uuid4
 
 def create_upload_dict(client:labelboxClient, table: pandas.core.frame.DataFrame, table_dict:dict, 
                        row_data_col:str, global_key_col:str, external_id_col:str, 
@@ -221,9 +222,14 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         modelRunId = ""   
     # Create a base data row dictionary     
     data_row = {}
-    if create_action or batch_action:    
+    if create_action or batch_action:
         data_row["row_data"] = row_dict[row_data_col]
-        data_row["global_key"] = row_dict[global_key_col]
+        if len(row_dict[global_key_col]) <= 200:
+            data_row["global_key"] = row_dict[global_key_col]
+        else:
+            if verbose:
+                print("Global key too long (>200 characters). Replacing with randomly generated global key.")
+            data_row["global_key"] = str(uuid4())
         if external_id_col in row_dict.keys():
             data_row["external_id"] = row_dict[external_id_col]
         # Create a list of metadata for a data row    
