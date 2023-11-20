@@ -190,6 +190,8 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
     #Remove nan values from dictionary
     nan_keys = []
     for key in row_dict.keys():
+        if type(row_dict[key]) == list:
+            continue
         if pandas.isna(row_dict[key]):
             nan_keys.append(key)
     for key in nan_keys:
