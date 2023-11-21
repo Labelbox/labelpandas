@@ -221,8 +221,8 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
         model_id = row_dict[model_id_col]                                                                 
         modelRunId = model_id_to_model_run_id[model_id]
     else:
-        modelRunId = ""   
-    # Create a base data row dictionary     
+        modelRunId = ""
+    # Create a base data row dictionary
     data_row = {}
     if create_action or batch_action:
         data_row["row_data"] = row_dict[row_data_col]
@@ -259,16 +259,17 @@ def create_upload(row_dict:dict, row_data_col:str, global_key_col:str, external_
     if annotate_action:
         ontology_index = project_id_to_ontology_index[projectId]
         for column_name in annotation_index.keys():
-            annotations.extend(
-                create_ndjsons(
-                    top_level_name=annotation_index[column_name],
-                    annotation_inputs=row_dict[column_name],
-                    ontology_index=ontology_index,
-                    confidence=False,
-                    mask_method=mask_method,
-                    divider=divider
+            if column_name in row_dict.keys():
+                annotations.extend(
+                    create_ndjsons(
+                        top_level_name=annotation_index[column_name],
+                        annotation_inputs=row_dict[column_name],
+                        ontology_index=ontology_index,
+                        confidence=False,
+                        mask_method=mask_method,
+                        divider=divider
+                    )
                 )
-            )
     # Create a list of predictoin ndjsons for a data row (does not include data row ID since data row has not been created)
     predictions = []        
     if prediction_action:
