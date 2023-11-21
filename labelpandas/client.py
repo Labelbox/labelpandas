@@ -276,6 +276,7 @@ class Client():
             model_run_id_col=x["model_run_id_col"], upload_method=upload_method, metadata_index=x["metadata_index"], 
             attachment_index=x["attachment_index"], annotation_index=x["annotation_index"], prediction_index=x["prediction_index"]
         )
+        print(actions)
 
         # Iterating over your pandas DataFrame is faster once converted to a list of dictionaries where {keys=column_names : value=row_column_values}
         table_dict = table.to_dict('records')                
