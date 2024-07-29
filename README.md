@@ -1,5 +1,5 @@
 > [!WARNING]
-> Starting in July 2024, we will begin achieving all data connector libraries were they will no longer be maintained, including `labelspark`, `labelpandas`, `labelsnow`, and `labelbox-bigquery` libraries.
+> Starting in July 2024, we will begin archiving all data connector libraries and they will no longer be maintained, including `labelspark`, `labelpandas`, `labelsnow`, and `labelbox-bigquery` libraries.
 > To import data from remote sources such as Databricks and Snowflake, set up Census integrations directly on the Labelbox platform.
 
 # The Official Open-Source Labelbox <> Pandas Python Integration
