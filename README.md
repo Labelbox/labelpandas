@@ -1,3 +1,7 @@
+> [!WARNING]
+> Starting in July 2024, we will begin achieving all data connector libraries were they will no longer be maintained, including `labelspark`, `labelpandas`, `labelsnow`, and `labelbox-bigquery` libraries.
+> To import data from remote sources such as Databricks and Snowflake, set up Census integrations directly on the Labelbox platform.
+
 # The Official Open-Source Labelbox <> Pandas Python Integration
 
 [Labelbox](https://labelbox.com/) enables teams to maximize the value of their unstructured data with its enterprise-grade training data platform. For ML use cases, Labelbox has tools to deploy labelers to annotate data at massive scale, diagnose model performance to prioritize labeling, and plug in existing ML models to speed up labeling. For non-ML use cases, Labelbox has a powerful catalog with auto-computed similarity scores that users can use add metadata tags to large amounts of data with a couple clicks.
